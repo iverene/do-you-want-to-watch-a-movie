@@ -55,3 +55,18 @@ describe('app pages on mock data', () => {
     expect(screen.getByText(/also Aug 7, 2026 [(]first watch[)]/)).toBeInTheDocument();
   });
 });
+
+describe('watchlist', () => {
+  it('marks a title watched: the card goes and the rate step opens', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const { within } = await import('@testing-library/react');
+    const user = userEvent.setup();
+    renderApp('/watchlist');
+    const card = await screen.findByRole('article', { name: 'Signal from Vega' });
+    expect(screen.getByText('10 TITLES TO WATCH')).toBeInTheDocument();
+    await user.click(within(card).getByRole('button', { name: '✓ Watched' }));
+    expect(await screen.findByText(/SAVED Signal from Vega is in Watched/)).toBeInTheDocument();
+    expect(await screen.findByText('9 TITLES TO WATCH')).toBeInTheDocument();
+    expect(screen.queryByRole('article', { name: 'Signal from Vega' })).not.toBeInTheDocument();
+  });
+});
