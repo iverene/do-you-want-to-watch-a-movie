@@ -1,6 +1,7 @@
 import { useDefaultScope } from '@/hooks/useScope';
 import { useSession } from '@/queries/auth';
 import { DuoAvatars } from '../pixel/DuoAvatars';
+import { StreakCard } from '../pixel/StreakCard';
 import { Dropdown } from '../ui/Dropdown';
 import { MoodNote } from './MoodNote';
 
@@ -13,6 +14,7 @@ export function LeftPage() {
       <div className="border border-line p-1">
         <DuoAvatars users={users} />
       </div>
+      <StreakCard />
       <MoodNote />
       <div className="dotted-divider" />
       <div>

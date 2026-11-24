@@ -13,6 +13,8 @@ describe('app pages on mock data', () => {
     expect(await screen.findByText('TOP PICK')).toBeInTheDocument();
     expect(await screen.findByRole('navigation', { name: 'Main' })).toBeInTheDocument();
     expect(await screen.findByText('Recently watched')).toBeInTheDocument();
+    expect(await screen.findByText('6-week streak')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '6 of the last 8 weeks had a shared watch' })).toBeInTheDocument();
   });
 
   it('lists watched titles by month with imports after the dated ones', async () => {
@@ -142,5 +144,27 @@ describe('import', () => {
     await user.click(screen.getByRole('button', { name: /Import 2 titles/ }));
     expect(await screen.findByText(/Imported 2 titles, skipped 1/)).toBeInTheDocument();
     expect(db().screenings.length).toBe(before + 2);
+  });
+});
+
+describe('mobile layout', () => {
+  it('puts tabs along the top, the streak on Home, and no left page or bottom bar', async () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((q: string) => ({ ...original(q), matches: false })) as typeof window.matchMedia;
+    try {
+      renderApp('/');
+      const nav = await screen.findByRole('navigation', { name: 'Main' });
+      const { within } = await import('@testing-library/react');
+      expect(
+        within(nav)
+          .getAllByRole('link')
+          .map((l) => l.textContent),
+      ).toEqual(['Home', 'Watched', 'Watchlist', 'Profile']);
+      expect(await screen.findByText('6-week streak')).toBeInTheDocument();
+      expect(screen.queryByRole('complementary', { name: 'Our room' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Log a watch/ })).toBeInTheDocument();
+    } finally {
+      window.matchMedia = original;
+    }
   });
 });
