@@ -117,3 +117,30 @@ describe('settings', () => {
     document.documentElement.className = 'theme-light';
   });
 });
+
+describe('import', () => {
+  it('uploads a CSV, reviews matches and imports', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const { db } = await import('@/services/mock/db');
+    const user = userEvent.setup();
+    const { container } = renderApp('/settings');
+    await screen.findByRole('button', { name: 'Choose CSV file' });
+    const file = new File(
+      ['title,year\nOrbit of Two,2025\nLemon Tree,2024\nNo Such Film,2023\n'],
+      'past.csv',
+      { type: 'text/csv' },
+    );
+    await user.upload(
+      container.ownerDocument.querySelector('input[type=file][accept=".csv,text/csv"]') as HTMLInputElement,
+      file,
+    );
+    expect(await screen.findByText(/1 matched/)).toBeInTheDocument();
+    expect(screen.getByText('No match')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Use this match' }));
+    expect(await screen.findByText(/2 matched/)).toBeInTheDocument();
+    const before = db().screenings.length;
+    await user.click(screen.getByRole('button', { name: /Import 2 titles/ }));
+    expect(await screen.findByText(/Imported 2 titles, skipped 1/)).toBeInTheDocument();
+    expect(db().screenings.length).toBe(before + 2);
+  });
+});
