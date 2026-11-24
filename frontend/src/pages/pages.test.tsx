@@ -31,4 +31,12 @@ describe('app pages on mock data', () => {
     expect(screen.getByText('2026 . 10')).toBeInTheDocument();
     expect(screen.queryByText(/aren.t on the calendar/)).not.toBeInTheDocument();
   });
+
+  it('shows stats with the four big numbers', async () => {
+    renderApp('/watched/stats?scope=ours&year=2026');
+    expect(await screen.findByText('Total watched')).toBeInTheDocument();
+    expect(screen.getAllByText('18')).toHaveLength(2); // total and together
+    expect(screen.getByText(/best streak 9 weeks/)).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Titles per month in 2026/ })).toBeInTheDocument();
+  });
 });
