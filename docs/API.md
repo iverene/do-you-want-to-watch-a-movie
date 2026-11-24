@@ -1,6 +1,8 @@
 # API.md — "Do You Want to Watch a Movie?"
 
-Version 1.0 · Nov 24, 2026
+Version 1.1 · Nov 24, 2026
+
+**Changelog.** 1.1: added the `MovieNight` type for `/movie-nights`; `top` in `/recommendations` may be `null`.
 
 This is the REST contract between `frontend/` and `backend/`. It is the single source of truth: the frontend's HTTP services and mock services both follow it, and the backend must implement it exactly. If it changes, update this file and `frontend/src/services/types.ts` + `schemas.ts` in the same commit.
 
@@ -53,6 +55,11 @@ interface WatchlistItem {
   reactions: { userId: string; reaction: 'want' | 'maybe' | 'nah' }[];
 }
 interface Recommendation { title: Title; matchPercent: number; reason: string; forUserId: string | null }
+interface MovieNight {                                // S8
+  id: string; title: Title; proposedBy: string;      // proposedBy = user id
+  date: string;                                      // YYYY-MM-DD
+  status: 'proposed' | 'accepted' | 'declined'; createdAt: string;
+}
 interface Streak { current: number; best: number; lastWeeks: boolean[] }   // lastWeeks: oldest→newest, length 8
 interface Stats {
   total: number; movies: number; series: number; together: number; solo: number;
@@ -103,7 +110,7 @@ interface ImportRow {
 | POST | `/movies/manual` | multipart: `title`, `genreIds[]`, `mediaType`, `year?`, `overview?`, `poster?` (file) or `posterUrl?` | `{title: Title}` | R9 |
 | GET | `/movies/:titleId/providers?region=PH` | — | `{items: {name: string, url?: string}[]}` | S4 |
 | GET | `/browse?category=trending\|top_rated\|genre&genreId=&type=` | — | `{items: Title[]}` | R2 |
-| GET | `/recommendations?for=both\|me&type=all\|movie\|tv` | — | `{top: Recommendation, items: Recommendation[]}` | R4 |
+| GET | `/recommendations?for=both\|me&type=all\|movie\|tv` | — | `{top: Recommendation \| null, items: Recommendation[]}` (`top` is null when nothing is left to pick) | R4 |
 | POST | `/recommendations/refresh` | `{for}` | same as GET | R4 |
 | GET | `/screenings?scope=&year=&genreId=&minStars=&type=&page=&pageSize=` | — | `{items: Screening[], total}` newest first; year-only after dated in the same year | R5 |
 | GET | `/screenings/calendar?month=YYYY-MM&scope=` | — | `{days: {date: string, screenings: Screening[]}[], undatedCount: number}` | R7 |
@@ -120,7 +127,7 @@ interface ImportRow {
 | PUT | `/watchlist/:id/reaction` | `{reaction: 'want'\|'maybe'\|'nah'\|null}` | `{item}` | S5 |
 | POST | `/watchlist/:id/watched` | `{watchedOn?, viewerIds?}` | `{screening}` (item removed) | R11 |
 | GET | `/watchlist/random?type=&genreId=&maxRuntime=` | — | `{item}` | S1 |
-| GET | `/movie-nights` · POST `/movie-nights` · PATCH `/movie-nights/:id` | `{titleId, date}` / `{status: 'accepted'\|'declined'}` | `{items}` / `{night}` | S8 |
+| GET | `/movie-nights` · POST `/movie-nights` · PATCH `/movie-nights/:id` | `{titleId, date}` / `{status: 'accepted'\|'declined'}` | `{items: MovieNight[]}` / `{night: MovieNight}` | S8 |
 | POST | `/import` | multipart `file` (CSV: `title,year` + optional `type,who,stars_a,stars_b`) | `{rows: ImportRow[]}` | R15 |
 | PATCH | `/import/rows/:id` | `{matchTitleId?: string, status?: 'skipped'\|'manual'}` | `{row}` | R15 |
 | POST | `/import/confirm` | — | `{imported: number, skipped: number}` | R15 |
