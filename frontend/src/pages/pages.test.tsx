@@ -24,4 +24,11 @@ describe('app pages on mock data', () => {
     );
     expect(screen.getAllByText('Rate it').length).toBeGreaterThan(0);
   });
+
+  it('shows the calendar with a stacked day and the undated note', async () => {
+    renderApp('/watched/calendar?scope=ours&month=2026-10');
+    expect(await screen.findByRole('button', { name: /Oct 31, 2026: .+, .+/ })).toHaveTextContent('2');
+    expect(screen.getByText('2026 . 10')).toBeInTheDocument();
+    expect(screen.queryByText(/aren.t on the calendar/)).not.toBeInTheDocument();
+  });
 });
