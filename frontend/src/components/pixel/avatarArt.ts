@@ -69,7 +69,7 @@ export function avatarPalette(a: Avatar): Record<string, string> {
     T: TOP[a.top],
     P: '#2F3E66',
     O: '#3A3A3A',
-    G: '#2A2A2A',
+    G: '#6B7C96', // frames: lighter than the eyes so they read as glasses
     C: '#E9893F',
   };
 }

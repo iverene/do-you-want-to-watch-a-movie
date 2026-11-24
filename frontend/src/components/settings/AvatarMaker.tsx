@@ -44,7 +44,7 @@ export function AvatarMaker({ initial }: { initial: Avatar }) {
   );
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row">
+    <div className="flex flex-col gap-4 sm:flex-row lg:flex-col">
       <div className="flex shrink-0 items-end justify-center self-start border-[3px] border-[#9AA0AA] bg-sky px-5 pb-2 pt-4">
         <PixelAvatar avatar={a} scale={9} label="Avatar preview" />
       </div>

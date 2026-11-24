@@ -13,21 +13,28 @@ export function ScreeningCard({ s }: { s: Screening }) {
   const { open } = useLogWatch();
   const canRate = s.viewerIds.includes(user.id) && !s.ratings.some((r) => r.userId === user.id);
   return (
-    <div className="flex w-[104px] flex-col gap-1 max-[400px]:w-[96px]">
+    <div className="flex w-[112px] flex-col gap-1 max-[400px]:w-[96px]">
       <Link to={`/watched/${s.id}`} className="group flex flex-col gap-1">
-        <Poster
-          title={s.title.title}
-          posterUrl={s.title.posterUrl}
-          tintKey={s.title.id}
-          className="w-full"
-          decorative
-        />
+        <span className="relative block">
+          <Poster
+            title={s.title.title}
+            posterUrl={s.title.posterUrl}
+            tintKey={s.title.id}
+            className="w-full"
+            decorative
+          />
+          {s.commentCount > 0 && (
+            <CommentIcon
+              count={s.commentCount}
+              className="absolute right-1 top-1 rounded border border-line bg-paper px-1 text-[11px] text-ink"
+            />
+          )}
+        </span>
         <span className="truncate text-[13px] font-bold group-hover:underline">{s.title.title}</span>
       </Link>
-      <span className="flex items-center gap-1.5 text-[12px] text-muted">
+      <span className="truncate text-[12px] text-muted">
         {s.watchedOn ? formatShort(s.watchedOn) : s.watchedYear} · {typeLabel(s.title.mediaType)}
         {s.season && ` S${s.season}`}
-        {s.commentCount > 0 && <CommentIcon count={s.commentCount} />}
       </span>
       <UserStars s={s} />
       {canRate && (

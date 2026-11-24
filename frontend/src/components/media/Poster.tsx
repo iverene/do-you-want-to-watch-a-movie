@@ -24,14 +24,17 @@ export function Poster({ title, posterUrl, tintKey, className, decorative }: Pro
   const showImage = posterUrl && !failed;
   return (
     <div
-      className={cn('relative aspect-[2/3] shrink-0 overflow-hidden border border-line', className)}
+      className={cn(
+        'relative aspect-[2/3] shrink-0 overflow-hidden border border-line [container-type:inline-size]',
+        className,
+      )}
       style={{ backgroundColor: tintFor(tintKey ?? title) }}
       role={decorative ? undefined : 'img'}
       aria-label={decorative ? undefined : `Poster for ${title}`}
       aria-hidden={decorative || undefined}
     >
       {(!showImage || !loaded) && (
-        <span className="absolute inset-0 flex items-center justify-center font-caps text-[11px] text-[#6B6E75]">
+        <span className="absolute inset-0 flex items-center justify-center font-caps text-[11px] text-[#6B6E75] [@container(max-width:60px)]:hidden">
           POSTER
         </span>
       )}
