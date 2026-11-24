@@ -14,4 +14,14 @@ describe('app pages on mock data', () => {
     expect(await screen.findByRole('navigation', { name: 'Main' })).toBeInTheDocument();
     expect(await screen.findByText('Recently watched')).toBeInTheDocument();
   });
+
+  it('lists watched titles by month with imports after the dated ones', async () => {
+    renderApp('/watched?scope=ours');
+    expect(await screen.findByRole('heading', { name: /November 2026/ })).toBeInTheDocument();
+    const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent ?? '');
+    expect(headings.findIndex((h) => h.includes('August 2026'))).toBeLessThan(
+      headings.findIndex((h) => h.includes('watched in 2025')),
+    );
+    expect(screen.getAllByText('Rate it').length).toBeGreaterThan(0);
+  });
 });
