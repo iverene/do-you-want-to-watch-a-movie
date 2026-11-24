@@ -1,0 +1,46 @@
+/* DESIGN.md §2.1 — every color is a token; components only use tokens. */
+.theme-light {
+  color-scheme: light;
+  --page: #dce7fb;
+  --grid: #b9ccf0;
+  --frame: #4faad3;
+  --paper: #ffffff;
+  --panel: #f3f4f6;
+  --inner: #eceef2;
+  --line: #c9cdd4;
+  --dot: #b5bac2;
+  --ink: #2e2e33;
+  --muted: #6b6e75;
+  --link: #2c68b0;
+  --tab: #1f78a6;
+  --ontab: #ffffff;
+  --red: #d23b2f;
+  --orange: #e8792f;
+  --yellow: #fff0a3;
+  --sky: #cfe4ff;
+  --star: #f2a21b;
+  --bubble: #f1f2f4;
+}
+
+.theme-dark {
+  color-scheme: dark;
+  --page: #0f1628;
+  --grid: #1e2a47;
+  --frame: #2b5f86;
+  --paper: #1a2133;
+  --panel: #222a3d;
+  --inner: #151b2b;
+  --line: #34405a;
+  --dot: #46526e;
+  --ink: #e8ecf5;
+  --muted: #a4acbe;
+  --link: #86b6ff;
+  --tab: #3a8fc4;
+  --ontab: #0f1628;
+  --red: #ff6b5e;
+  --orange: #ff9a55;
+  --yellow: #4d4522;
+  --sky: #22324f;
+  --star: #ffc24b;
+  --bubble: #242c40;
+}

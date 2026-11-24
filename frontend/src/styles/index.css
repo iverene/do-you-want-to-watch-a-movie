@@ -1,3 +1,118 @@
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply font-body text-ink;
+    font-size: 14px;
+    background-color: var(--page);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  :focus-visible {
+    outline: 3px solid var(--tab);
+    outline-offset: 2px;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+  .bevel {
+    background: linear-gradient(#ffffff, #e4e7ec);
+    border: 1px solid #9aa0aa;
+    color: #2e2e33;
+  }
+  .caps {
+    @apply font-caps uppercase;
+  }
+  .stitch {
+    border: 2px dashed rgba(255, 255, 255, 0.8);
+  }
+  .dotted-divider {
+    border-top: 1px dashed var(--dot);
+  }
+  .skeleton {
+    background: var(--inner);
+    animation: pulse-px 1.2s ease-in-out infinite;
+  }
+  .fade-in {
+    animation: fade-in 150ms ease-out;
+  }
+  .pop-in {
+    animation: pop-in 160ms ease-out;
+  }
+  .bump {
+    animation: bump 160ms ease-out;
+  }
+  .press:active:not(:disabled) {
+    transform: translate(1px, 1px);
+    box-shadow:
+      inset -3px -3px 0 rgba(0, 0, 0, 0.18),
+      inset 3px 3px 0 rgba(255, 255, 255, 0.35);
+  }
+  .sr-only-focusable:not(:focus) {
+    @apply sr-only;
+  }
+}
+
+@keyframes pulse-px {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes bump {
+  from {
+    transform: scale(1.15);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pop-in {
+    animation: fade-in 150ms ease-out;
+  }
+  .bump {
+    animation: none;
+  }
+  .press:active:not(:disabled) {
+    transform: none;
+  }
+}
