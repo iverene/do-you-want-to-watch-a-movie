@@ -1,7 +1,9 @@
-export function CommentIcon({ count }: { count: number }) {
+import { cn } from '@/lib/cn';
+
+export function CommentIcon({ count, className }: { count: number; className?: string }) {
   return (
     <span
-      className="inline-flex items-center gap-0.5 text-muted"
+      className={cn('inline-flex items-center gap-0.5 text-muted', className)}
       aria-label={`${count} ${count === 1 ? 'comment' : 'comments'}`}
     >
       <svg

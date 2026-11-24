@@ -38,12 +38,12 @@ export function WatchlistCard({ item }: { item: WatchlistItem }) {
         <div>
           <h3 className="truncate text-[14px] font-bold">{t.title}</h3>
           <p className="truncate text-[12px] text-muted">{titleMeta(t, { genre: false })}</p>
-          <p className="flex items-center gap-1 font-hand text-[16px] text-muted">
+          <p className="flex items-center gap-1 whitespace-nowrap font-hand text-[16px] text-muted">
             <PixelAvatar avatar={adder.avatar} scale={2} /> added by {nameOf(item.addedBy)}
           </p>
         </div>
         <Reactions item={item} />
-        <div className="flex gap-1.5">
+        <div className="flex gap-1">
           <button
             type="button"
             disabled={watched.isPending}
@@ -56,7 +56,7 @@ export function WatchlistCard({ item }: { item: WatchlistItem }) {
                 },
               )
             }
-            className="press min-h-9 flex-1 rounded border-2 border-pixel-border bg-orange px-2 text-[13px] font-bold text-pixel-text shadow-bevel max-lg:min-h-11"
+            className="press min-h-9 min-w-0 flex-1 whitespace-nowrap rounded border-2 border-pixel-border bg-orange px-1 text-[12px] font-bold text-pixel-text shadow-bevel max-lg:min-h-11"
           >
             ✓ Watched
           </button>
@@ -65,7 +65,7 @@ export function WatchlistCard({ item }: { item: WatchlistItem }) {
             aria-label={`Plan a movie night for ${t.title}`}
             aria-expanded={planning}
             onClick={() => setPlanning((p) => !p)}
-            className="bevel min-h-9 w-10 rounded text-[14px] max-lg:min-h-11 max-lg:w-11"
+            className="bevel min-h-9 w-8 shrink-0 rounded text-[14px] max-lg:min-h-11 max-lg:w-11"
           >
             ✎
           </button>
@@ -73,7 +73,7 @@ export function WatchlistCard({ item }: { item: WatchlistItem }) {
             type="button"
             aria-label={`Remove ${t.title} from the watchlist`}
             onClick={() => remove.mutate(item.id)}
-            className="bevel min-h-9 w-10 rounded font-caps text-[12px] max-lg:min-h-11 max-lg:w-11"
+            className="bevel min-h-9 w-8 shrink-0 rounded font-caps text-[12px] max-lg:min-h-11 max-lg:w-11"
           >
             x
           </button>

@@ -52,6 +52,7 @@ export default function SettingsPage() {
           <Block title="Appearance">
             <Segmented
               label="Theme"
+              className="self-start"
               value={theme}
               onChange={(t) => {
                 setTheme(t);

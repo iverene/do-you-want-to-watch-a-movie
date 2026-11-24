@@ -21,7 +21,7 @@ export function Reactions({ item }: { item: WatchlistItem }) {
             aria-pressed={mine === r}
             onClick={() => react.mutate({ id: item.id, reaction: mine === r ? null : r })}
             className={cn(
-              'min-h-8 flex-1 rounded-full border px-2 text-[12px] font-bold max-lg:min-h-11',
+              'min-h-8 min-w-0 flex-1 rounded-full border px-1 text-[12px] font-bold max-lg:min-h-11',
               mine === r ? 'border-tab bg-tab text-ontab' : 'border-line bg-paper text-ink',
             )}
           >

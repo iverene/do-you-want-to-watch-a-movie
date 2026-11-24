@@ -101,7 +101,7 @@ export default function WatchlistPage() {
           }
         />
       ) : (
-        <ul className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+        <ul className="grid grid-cols-1 gap-4 lg:grid-cols-4">
           {list.data.items.map((item) => (
             <li key={item.id}>
               <WatchlistCard item={item} />

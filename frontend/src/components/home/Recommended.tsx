@@ -98,6 +98,12 @@ export function Recommended() {
               </li>
             ))}
           </ul>
+          {rest.length < (desktop ? 7 : 4) && (
+            <p className="font-hand text-[17px] text-muted">
+              {rest.length ? "that's every pick for now." : 'no more picks for now.'} rate a few more watches
+              and we'll find new ones.
+            </p>
+          )}
         </>
       )}
     </section>

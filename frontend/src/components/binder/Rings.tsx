@@ -5,7 +5,7 @@ const Ring = () => (
 /** Two pairs of ring pills straddling the gap between the pages. */
 export function Rings() {
   return (
-    <div aria-hidden className="relative z-10 -mx-4 flex w-0 flex-col items-center justify-between py-14">
+    <div aria-hidden className="relative z-10 flex w-4 shrink-0 flex-col items-center justify-between py-14">
       {[0, 1].map((p) => (
         <div key={p} className="flex flex-col gap-2">
           <Ring />

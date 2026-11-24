@@ -13,7 +13,7 @@ export function WatchedHeader({ view }: { view: 'list' | 'calendar' }) {
     <SectionHeader
       as="h1"
       title="Watched"
-      sub="NEWEST FIRST"
+      sub={view === 'list' ? 'NEWEST FIRST' : 'BY DAY'}
       right={
         <>
           <Segmented
