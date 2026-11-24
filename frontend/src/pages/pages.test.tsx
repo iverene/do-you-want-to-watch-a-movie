@@ -70,3 +70,30 @@ describe('watchlist', () => {
     expect(screen.queryByRole('article', { name: 'Signal from Vega' })).not.toBeInTheDocument();
   });
 });
+
+describe('profile', () => {
+  it("shows the partner's profile read-only with their Top 5", async () => {
+    renderApp('/profile/sam');
+    expect(await screen.findByRole('heading', { name: 'Sam', level: 1 })).toBeInTheDocument();
+    expect(screen.getByText(/@sam · \d+ watched · taste match with Alex \d+%/)).toBeInTheDocument();
+    expect(screen.getByText('Number 5: empty')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/badge/i)).not.toBeInTheDocument();
+  });
+
+  it('edits my Top 5 with only watched titles', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const { within } = await import('@testing-library/react');
+    const user = userEvent.setup();
+    renderApp('/profile/alex');
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Top 5' });
+    const slot5 = await within(dialog).findByLabelText('Number 5');
+    const labels = [...(slot5 as HTMLSelectElement).options].map((o) => o.text);
+    expect(labels.some((l) => l.startsWith('Signal from Vega'))).toBe(false); // on the watchlist, not watched
+    expect(labels.some((l) => l.startsWith('Night Bus 42'))).toBe(true);
+    await user.selectOptions(slot5, labels.find((l) => l.startsWith('Night Bus 42'))!);
+    await user.click(within(dialog).getByRole('button', { name: /Save Top 5/ }));
+    expect(await screen.findByText(/Top 5 saved/)).toBeInTheDocument();
+  });
+});
