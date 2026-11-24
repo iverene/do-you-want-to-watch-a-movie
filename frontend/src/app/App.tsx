@@ -7,7 +7,7 @@ export function App() {
   return (
     <Providers>
       <Suspense fallback={null}>
-        <RouterProvider router={router} />
+        <RouterProvider router={router} future={{ v7_startTransition: true }} />
       </Suspense>
     </Providers>
   );
