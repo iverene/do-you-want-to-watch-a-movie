@@ -39,4 +39,19 @@ describe('app pages on mock data', () => {
     expect(screen.getByText(/best streak 9 weeks/)).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Titles per month in 2026/ })).toBeInTheDocument();
   });
+
+  it('hides the partner rating on title detail until you rate (blind rating)', async () => {
+    renderApp('/watched/s-24', { as: 'u-alex' });
+    expect(await screen.findByRole('heading', { name: 'Night Bus 42' })).toBeInTheDocument();
+    expect(screen.getByText("Sam's stars stay hidden until you rate.")).toBeInTheDocument();
+    expect(screen.getByText('No.30 (2026.11.22)')).toBeInTheDocument();
+  });
+
+  it('shows both bubbles once both have rated, plus the rewatch history', async () => {
+    renderApp('/watched/s-19', { as: 'u-sam' });
+    expect(await screen.findByRole('heading', { name: 'Paper Moons' })).toBeInTheDocument();
+    expect(screen.getByText('told you.')).toBeInTheDocument();
+    expect(screen.getByText('still perfect.')).toBeInTheDocument();
+    expect(screen.getByText(/also Aug 7, 2026 [(]first watch[)]/)).toBeInTheDocument();
+  });
 });
