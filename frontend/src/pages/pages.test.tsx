@@ -97,3 +97,23 @@ describe('profile', () => {
     expect(await screen.findByText(/Top 5 saved/)).toBeInTheDocument();
   });
 });
+
+describe('settings', () => {
+  it('switches to dark, saves it per user, and validates the password form', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const { db } = await import('@/services/mock/db');
+    const user = userEvent.setup();
+    renderApp('/settings');
+    await user.click(await screen.findByRole('radio', { name: '☾ Dark' }));
+    expect(document.documentElement).toHaveClass('theme-dark');
+    expect(localStorage.getItem('dywwam-theme')).toBe('dark');
+    await vi.waitFor(() => expect(db().users[0].theme).toBe('dark'));
+
+    await user.type(screen.getByLabelText('Current password'), 'movienight2026');
+    await user.type(screen.getByLabelText(/^New password/), 'short');
+    await user.click(screen.getByRole('button', { name: 'Change password' }));
+    expect(await screen.findByText('Use at least 10 characters.')).toBeInTheDocument();
+    expect(screen.getByText('Reset demo data')).toBeInTheDocument();
+    document.documentElement.className = 'theme-light';
+  });
+});
