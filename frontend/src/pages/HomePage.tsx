@@ -1,4 +1,4 @@
-import { BrowseByGenre } from '@/components/home/BrowseByGenre';
+import { Browse } from '@/components/home/Browse';
 import { Recommended } from '@/components/home/Recommended';
 import { RecentlyWatched, UpNext } from '@/components/home/RecentAndUpNext';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
@@ -11,7 +11,6 @@ export default function HomePage() {
   const { users } = useSession();
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="sr-only">Home</h1>
       {!desktop && (
         <div className="flex flex-col gap-3">
           <StreakCard />
@@ -19,7 +18,7 @@ export default function HomePage() {
         </div>
       )}
       <Recommended />
-      <BrowseByGenre />
+      <Browse />
       <div className="flex flex-col gap-6 lg:flex-row">
         <RecentlyWatched />
         {desktop && <UpNext />}

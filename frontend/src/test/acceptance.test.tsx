@@ -16,7 +16,7 @@ describe('acceptance', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
     expect(await screen.findByText('7-week streak')).toBeInTheDocument();
-    expect(screen.getByLabelText(/^Today 1, total 31$/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Today 1, total 28$/)).toBeInTheDocument();
     expect(
       within(screen.getByRole('region', { name: 'Recently watched' })).getByText('Starlit Diner'),
     ).toBeInTheDocument();

@@ -1,11 +1,11 @@
 # DESIGN.md — "Do You Want to Watch a Movie?"
 
 **Design concept: Retro Minihome**
-Version 1.0 · Nov 24, 2026
+Version 1.1 · Nov 25, 2026 (revisions: bigger binder, custom scrollbar and dropdowns, poster-only Home rows, mini calendar, likes, privacy)
 
 A private movie diary for exactly two people. The look borrows from 2000s personal homepages and blogs: a ring-binder notebook on grid paper, side tabs, pixel fonts, tiny counters, speech-bubble comments and framed posters. It should feel nostalgic, cozy and a little playful, but stay clean and easy to use.
 
-This document is the source of truth for the frontend. The requirements live in the requirements doc (R1–R16, S1–S12). The visual reference is the "Retro Minihome" page of the design canvas.
+This document is the source of truth for the frontend. The requirements live in the requirements doc (R1–R16, S1–S13). The visual reference is the "Retro Minihome" page of the design canvas.
 
 ---
 
@@ -137,18 +137,19 @@ Keep it small and snappy (120–180 ms, `ease-out`):
 │  │ │ ┌ left page 270px ┐ ○○ ┌ right page (flex 1) ─────────┐ │ │Wat…│
 │  │ │ │ duo avatars     │    │ page content                 │ │ │Wat…│
 │  │ │ │ streak card     │ ○○ │ (scrolls inside if long)     │ │ │Pro…│
-│  │ │ │ TODAY IS..      │    │                              │ │ │Set…│
-│  │ │ │ status note     │    │                              │ │ └───┘
-│  │ │ │ names, url      │    │                              │ │    │
-│  │ │ │ ★ Ours ▼        │    │                              │ │    │
+│  │ │ │ ─ ─ ─ ─ ─ ─     │    │                              │ │ │Set…│
+│  │ │ │ ◀ Nov 2026 ▶    │    │                              │ │ └───┘
+│  │ │ │ mini calendar   │    │                              │ │    │
+│  │ │ │                 │    │                              │ │    │
 │  │ │ └─────────────────┘    └──────────────────────────────┘ │    │
 │  │ └──────────────────────────────────────────────────────────┘ │    │
 │  └──────────────────────────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-- Binder: width `min(1060px, 100vw - 140px)`, height `calc(100vh - 100px)`, min 760 px, centered with room on the right for the tabs.
-- Header strip inside the binder: counter (left, aligned with the left page), site title (flex), **+ Log a watch** (right).
+- Binder: nearly full window: width `min(1400px, 100vw - 160px)`, height `calc(100vh - 40px)` (min 600 px), centered with room on the right for the tabs.
+- Header strip inside the binder: counter (left, aligned with the left page; counts screenings I was in), site title (flex), and the main orange button (right): **+ Log a watch**, or **+ Add to watchlist** on the Watchlist page.
+- Scrollbars: custom thin scrollbar (10 px, `--tab` thumb with a 2 px `--paper` border, square ends, transparent track). Horizontal poster rows hide their scrollbar completely and use ◀ ▶ arrows instead (see 4.21).
 - Left page: 270 px fixed, full height, padding 16–18.
 - Rings: two pairs of ring pills (40 × 12 px, gradient `#FFF → #B9BEC8`) straddling the gap between the pages, near the top and near the bottom.
 - Right page: flex 1, padding 18 × 22, `overflow-y: auto`. The binder itself never scrolls.
@@ -221,12 +222,13 @@ Each component lists its anatomy, states and behavior. Names match the suggested
 ### 4.8 `Segmented` (switch)
 - Inline group with a 1 px `#8E949E` border and radius 4. Selected segment: `--tab` fill, `--ontab` text, bold. Others: bevel gradient. Height 32 px (44 px touch area on mobile via padding).
 - Uses `role="radiogroup"` with `role="radio"` items, and arrow-key navigation.
-- Instances: Ours / Mine / [Name B]; For both / For me; All / Movies / Series; List / Calendar; Light / Dark; Both of us / Just me.
+- Instances: Ours / Mine; For both / For me; All / Movies / Series; List / Calendar; Light / Dark; Both of us / Just me.
 
-### 4.9 `Dropdown`
-- 32 px (desktop) or 44 px (forms, mobile) tall, 1 px `#8E949E` border, label + a 22–26 px bevel cap with ▼.
-- Native `<select>` underneath for accessibility; styled wrapper on top.
-- Instances: "★ Ours" (left page), Watched in [year], Genre, Stars, Movies & series, Year, Month, Added by, Sort, Season.
+### 4.9 `Dropdown`, `Listbox` and `Combobox`
+- All share the look: 32 px (desktop) or 44 px (forms, mobile) tall, 1 px `#8E949E` border, label + a 22–26 px bevel cap with ▼.
+- `Dropdown`: native `<select>` underneath, for short filter lists. Instances: Watched in [year], Genre, Stars, Movies & series, Year, Month, Season.
+- `Listbox`: fully custom popup for long lists (ARIA listbox): pixel panel (2 px `--pixel-border`, radius 6, 4 px hard shadow), max 260 px tall with the custom scrollbar, ▶ in orange beside the chosen option, `--sky` highlight on the active option. Keys: ↓/↑/Enter/Space open, arrows/Home/End move, type a letter to jump, Esc/Tab close. Instance: the Home genre filter.
+- `Combobox`: type-to-filter input with the same popup, ✕ to clear, "No watched title matches." when empty. Instance: Top 5 picker slots.
 
 ### 4.10 `Chip`
 - Pill, 5 × 12 px padding, 13 px bold. Default: `--paper` + `--line` border. Selected: `--tab` fill, `--ontab` text.
@@ -291,6 +293,11 @@ Each component lists its anatomy, states and behavior. Names match the suggested
 - Error: border `--red`, message below in `--red` 12 px. Focus: 2 px `--tab` outline.
 - Textarea for comments uses DotGothic16 15 px.
 
+### 4.21 `PosterRow`, `PosterTile` and `TitlePreview`
+- `PosterTile`: poster only (92 × 138), no text below; the title is the tooltip and `aria-label`. Hover lifts 2 px.
+- `PosterRow`: a horizontal list of tiles with the scrollbar hidden. ◀ ▶ round yellow pixel buttons (40 px, 2 px border, hard shadow) sit over the edges, appear while the row scrolls (fade out after 1.2 s idle) or while hovered/focused, and only on a side with more to see. Each click pages by 80 % of the row width.
+- `TitlePreview` (`PixelWindow`): poster, title, meta, optional note (match % · reason), overview, cast chips, ♡ like, *+ Add to watchlist* (or ✓ On the watchlist) and *✓ Mark as watched* (then the rate step). Used by Home rows and profile posters.
+
 ---
 
 ## 5. The left page (profile spread)
@@ -299,11 +306,9 @@ Shown on every signed-in desktop page, identical everywhere:
 
 1. `DuoAvatars` in a 1 px framed box.
 2. `StreakCard`.
-3. "TODAY IS.." mood line: Silkscreen label + DotGothic16 mood ("★ movie mood"). Editable (click → small input), shared by both users.
-4. Status note in Gaegu (2–3 lines, max 80 chars), editable via "▶EDIT". "▶HISTORY" shows past notes.
-5. Dotted divider.
-6. "[Name A] & [Name B]" (Nanum 800, 18, `--link`) and the room URL in orange (`movie-room/[username]`).
-7. "★ Ours" dropdown: switches the whole app's default scope (Ours / Mine / [Name B]). Pages can still override with their own switch.
+3. Dotted divider.
+4. **Mini calendar** (my watches): ◀ Month YYYY ▶, a 7-column S–S grid of day numbers; days with a watch are orange squares linking to that month in the Watched calendar (Mine), today has a `--tab` ring. Below: "[N] days with a watch this month".
+- The mood line, status note, names/room URL and the default-scope dropdown were removed on Nov 25. Every page defaults to Ours.
 
 ---
 
@@ -317,45 +322,49 @@ All routes except `/login` require a session. Tabs: Home, Watched, Watchlist, Pr
 
 ### 6.2 Home — `/` (R2, R4)
 Right page, top to bottom:
-1. `SectionHeader` "Recommended" · "AI PICKS FROM YOUR RATINGS" · switches *For both / For me* and *All / Movies / Series*.
-2. **Top pick** panel (`--panel`): `FramedPoster` (120 × 172), `TOP PICK` tag + type, DotGothic16 title, meta (year · genre · runtime · "streaming on [Provider]"), Gaegu reason ("because you both gave [Title] five stars"), chips (match %, genre, "[Actor] in the cast"), actions: *+ Add to watchlist*, *Mark as watched*, ▶ *Spin instead*.
-3. "More picks for you" row: 7 posters (92 × 132) with title, year · type, and "[N]% match" in orange. ▶ Refresh.
-4. "Browse by genre" · "TRENDING · TOP RATED": genre chips (All selected), which filter a browse row.
+1. `SectionHeader` **"Home"** (the page h1, no sub-label) · switches *For both / For me* and *All / Movies / Series*.
+2. **Top pick** panel (`--panel`): `FramedPoster` (120 × 172), `TOP PICK` tag + type, DotGothic16 title, meta (year · genre · runtime), Gaegu reason ("because you both gave [Title] five stars"), chips (match %, genre, "[Actor] in the cast"), actions: *+ Add to watchlist*, *Mark as watched*, ▶ *Spin instead*.
+3. "More picks for you": a `PosterRow` of up to 12 picks. ▶ Refresh. The match % and reason show in the preview.
+4. "Browse" · "[GENRE]" with the genre `Listbox` on the right, then labeled `PosterRow`s: TRENDING, BECAUSE YOU WATCHED [TITLE], NEW RELEASES, TOP RATED, BECAUSE YOU WATCHED [TITLE 2]. "Because…" titles are ones I rated 4★ or more.
+- Every Home row shows **posters only**; clicking opens `TitlePreview` (poster, meta, overview, cast, ♥, *Add to watchlist*, *Mark as watched*).
 5. Two columns: "Recently watched" (3 items, newest with NEW!, stars) and "Watchlist · UP NEXT" (2 items with "added by").
-- Already-watched titles never appear in recommendations.
-- Mobile Home order: streak card + duo avatars, Recommended (Both/Me), top pick, 4 picks, genre chips, Recently watched.
+- Titles I already watched never appear in recommendations or Browse rows.
+- Mobile Home order: streak card + duo avatars, Home (Both/Me), top pick, picks row, Browse rows, Recently watched.
 
 ### 6.3 Watched — list — `/watched` (R5)
 1. Header "Watched" · "NEWEST FIRST" · *List / Calendar* · **Stats** button.
-2. Toolbar: *Ours / Mine / [Name B]*, then dropdowns: Watched in [year] (watched year), Genre, Stars (any / 4+ / 3+ …), Movies & series.
-3. Month groups (DotGothic16 "November 2026" + "[N] titles"), each a row of cards: poster (104 × 150), title, "Nov 22 · Movie" + comment count, and both users' stars (A ★★★★★ / B ★★★★☆), or "solo" if one person watched.
+2. Toolbar: *Ours / Mine*, then dropdowns: Watched in [year] (watched year), Genre, Stars (any / 4+ / 3+ …), Movies & series.
+3. Month groups (DotGothic16 "November 2026" + "[N] titles"), each a row of cards: poster (104 × 150), title, "Nov 22 · Movie" + comment count, and the **average** stars with the number ("★★★★½ 4.5"); "rate to reveal" when only the partner rated (blind rating), "not rated" when nobody did.
 4. Imported year-only titles: a dashed `--panel` row per year: "imported · watched in 2025 · no exact date", sorted after the dated titles of that year, with a *Rate it* button if unrated.
 - Empty state: Gaegu "nothing here yet.. log your first watch!" + LogWatchButton.
 
 ### 6.4 Watched — calendar — `/watched/calendar` (R7)
-Header with *List / Calendar* (Calendar selected) and Stats; toolbar with *Ours / Mine / [Name B]* and month navigation (◀ 2026 . 11 ▶); `CalendarGrid`; a note row: `NO DATE` tag + "[N] imported titles from 2026 aren't on the calendar. ▶ See them in the list".
+Header with *List / Calendar* (Calendar selected) and Stats; toolbar with *Ours / Mine* and month navigation (◀ 2026 . 11 ▶); `CalendarGrid`; a note row: `NO DATE` tag + "[N] imported titles from 2026 aren't on the calendar. ▶ See them in the list".
 
 ### 6.5 Watched — stats — `/watched/stats` (R6)
-Header "Stats" · ▶ Back to Watched. Toolbar: *Ours / Mine / [Name B]*, Year dropdown, Month dropdown (All + 12 months).
+Header "Stats" · ▶ Back to Watched. Toolbar: *Ours / Mine*, Year dropdown, Month dropdown (All + 12 months).
 Content: 4 `BigNumber`s (Total watched with movies/series split, Top genre, Taste match %, Together with solo count), then two columns: Genres (`PixelBarChart`, top 5) and Top rated (4 items, rank in orange, poster, stars). Then "By month" `MonthChart` for the year, then the note "[N] imported titles have no month, so they count in the year only." Best streak appears under Together.
-- "Top rated" uses the average of both users in Ours, and that user's own stars in a personal view.
+- "Top rated" uses the average in Ours and my own stars in Mine. One entry per title. Ties: rated by both first, then the more recent watch, then title A–Z.
 
 ### 6.6 Title detail — `/watched/:screeningId` (R10)
-- Top row: ▶ Back to Watched, `No.128 (2026.11.22)` yellow label (No. = the running number of the screening), ♡ and ★ (add to Top 5) pixel buttons.
-- Body: `FramedPoster` (200 × 290) + Silkscreen "MOVIE · WATCHED TOGETHER", DotGothic16 title, meta, big average "4.5" + stars + "average of you two", description, cast, "Stream in PH: [Provider]", watch history ("Watched Nov 22, 2026 · also Mar 3, 2025 (rewatch)"), actions: *Log a rewatch*, *Edit my rating*, *Change date*.
-- Then "Ratings & comments (2) NEW!" with ▶ Write a comment, and one `SpeechBubble` per user. Blind rating applies.
+- Top row: ▶ Back to Watched, `No.128 (2026.11.22)` yellow label (No. = the running number of the screening), ♡ like (fills ♥ when liked; listed under Liked on my profile) and ★ (add to Top 5) pixel buttons.
+- Body: `FramedPoster` (200 × 290) + Silkscreen "MOVIE · WATCHED TOGETHER", DotGothic16 title, meta, big average "4.5" + stars + "average of you two", description, cast, watch history ("Watched Nov 22, 2026 · also Mar 3, 2025 (rewatch)"), actions: *Log a rewatch*, *Edit my rating*, *Change date*.
+- Then "Ratings & comments (2) NEW!" with ▶ Write a comment (hidden once I have commented), and one `SpeechBubble` per user. Blind rating applies.
 
-### 6.7 Watchlist — `/watchlist` (R11, R12, S1, S5, S8)
+### 6.7 Watchlist — `/watchlist` (R11, R12, S1, S8)
 - Header "Watchlist" · "[N] TITLES TO WATCH" · *All / Movies / Series*.
-- Toolbar: *+ Add to watchlist* (opens the same search dialog in watchlist mode), Spin (? pixel button → random pick from the current filter), "Added by" dropdown, "Sort: both want it first" dropdown.
-- Grid (5 columns desktop, list on mobile): poster, title, year · type, mini avatar + Gaegu "added by [Name]", reactions (want / maybe / nah; the other user picks), **✓ Watched** (orange) and ✎ plan-a-night button.
+- **+ Add to watchlist** is the orange header button on this page (opens the search dialog in watchlist mode).
+- Toolbar: Spin (? pixel button → random pick from the current filter) + "Can't decide? Spin for a random pick. Newest first."
+- Grid (4–5 columns desktop, list on mobile), newest first: poster, title, year · type, mini avatar + Gaegu "added by [Name]", **✓ Watched** (orange), ✎ plan-a-night and x remove.
+- x opens a `ConfirmDialog` "Remove from watchlist" (*Cancel* / *! Remove*) before deleting.
 - ✓ Watched: creates a screening for today, removes the card, then opens the rate step.
 
 ### 6.8 Profile — `/profile/:username` (R13, R14)
 - Switch *[Name A] / [Name B]* at the top (view either profile).
-- Head: large `PixelAvatar` on `--sky`, DotGothic16 name, "@username · [N] watched · taste match with [Name B] [N]%", FAVE GENRES chips. Own profile: *Customize avatar* (→ Settings) and ▶ View [Name B]'s profile.
-- Top 5: five `FramedPoster`s with yellow rank squares 1–5; ▶ Edit (own profile) opens a picker that lists only watched titles.
-- Two columns: Watchlist (*Added by me / Shared*) as small posters; "Recently rated" (3 items with a short quote and stars).
+- Head: large `PixelAvatar` on `--sky`, DotGothic16 name, "@username · [N] watched · taste match with [Name B] [N]%", FAVE GENRES chips. Own profile on mobile: ▶ Settings. Partner's profile: ▶ Back to my profile.
+- Top 5: five `FramedPoster`s with yellow rank squares 1–5; ▶ Edit (own profile) opens a picker with one type-to-search `Combobox` per slot, listing only watched titles.
+- Two columns: left = **Watchlist** · "ADDED BY [NAME]" and **Liked** · "♥ HEARTED TITLES", both as small clickable posters that open `TitlePreview`; right = "Recently rated" (3 items with a short quote and stars).
+- The partner's profile is the only place their activity shows. On it, Top 5 and Recently rated open `TitlePreview` instead of the (private) diary entry.
 - **No badges.**
 
 ### 6.9 Settings — `/settings` (R13, S12)

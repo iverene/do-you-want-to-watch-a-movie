@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useScreenings } from '@/queries/screenings';
 import { useSetTopFive } from '@/queries/profile';
 import { errorMessage, isApiError, type Screening } from '@/services';
-import { Dropdown } from '../ui/Dropdown';
+import { Combobox } from '../ui/Combobox';
 import { LogWatchButton } from '../ui/LogWatchButton';
 import { LineSkeleton } from '../ui/Skeleton';
 import { useToast } from '../ui/Toast';
@@ -37,7 +37,7 @@ export function TopFivePicker({
   return (
     <PixelWindow title="Top 5" onClose={onClose} width="lg:w-[560px]">
       <p className="mb-3 text-[13px] text-muted">
-        Only titles you&apos;ve watched can go in. Order matters: 1 is your favorite.
+        Type to find a title you&apos;ve watched. Order matters: 1 is your favorite.
       </p>
       {watched.isPending ? (
         <LineSkeleton lines={5} />
@@ -50,14 +50,13 @@ export function TopFivePicker({
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-pixel-border bg-yellow font-pixel text-[16px] text-pixel-text">
                   {i + 1}
                 </span>
-                <Dropdown
-                  className="flex-1 [&>div]:w-full"
+                <Combobox
+                  className="flex-1"
                   label={`Number ${i + 1}`}
-                  size="lg"
+                  placeholder="Type a title, or leave empty"
                   value={sid}
                   onChange={(v) => setSlots((s) => s.map((x, j) => (j === i ? v : x)))}
                   options={[
-                    { value: '', label: '— empty —' },
                     ...options
                       .filter((o) => !taken.has(o.title.id))
                       .map((o) => ({

@@ -2,6 +2,8 @@
 
 The build prompt for `frontend/`. Related docs: `docs/DESIGN.md`, `docs/REQUIREMENTS.md`, `docs/API.md`.
 
+> **Revised Nov 25, 2026.** Where this prompt and the Nov 25 revisions disagree, follow `REQUIREMENTS.md` 1.1, `DESIGN.md` 1.1 and `API.md` 1.2. The checklist below has been updated. In short: no streaming providers, no watchlist reactions or sort, likes (S13) on the profile, scope is only Ours / Mine, the partner is visible only through their Profile, poster-only Home rows with a custom genre dropdown, a mini calendar on the left page, and a bigger binder.
+
 ## Role and goal
 
 You are a senior frontend engineer. Build the complete frontend for **"Do You Want to Watch a Movie?"**, a private movie and series diary for exactly two people. Follow `docs/DESIGN.md` (the "Retro Minihome" design) exactly for look and layout, and this prompt for behavior, structure, the API and how to commit.
@@ -61,7 +63,6 @@ export const serviceConfig = {
   apiBaseUrl: '/api',                // used only in 'http' mode
   mockLatencyMs: 250,                // fake network delay so loading states are visible
   mockStorageKey: 'dywwam-mock-db-v1',
-  region: 'PH',                      // streaming providers region
   timeZone: 'Asia/Manila',           // "today" for new watches and streak weeks
 };
 ```
@@ -82,13 +83,13 @@ Seed two users (both passwords `movienight2026`):
 (Real names are added later; never hard-code names in components. Always read them from `authService.me()` and `usersService.getProfile()`.)
 
 Seed at least:
-- **40 titles** in a mock catalog (30 movies, 10 series) with **original, made-up titles** (e.g. "Paper Moons", "The Quiet Harbor", "Night Bus 42"), years, genres, a 1–2 sentence overview, 3–5 made-up cast names, runtime, and `posterUrl: null`. The UI shows tinted placeholders when the poster is null.
+- **64 titles** in a mock catalog (46 movies, 18 series) with **original, made-up titles** (e.g. "Paper Moons", "The Quiet Harbor", "Night Bus 42"), years, genres, a 1–2 sentence overview, 3–5 made-up cast names, runtime, and `posterUrl: null`. The UI shows tinted placeholders when the poster is null.
 - **24 screenings** spread over Aug–Nov 2026 (most watched together, a few solo), with ratings and comments from one or both users, including one rewatch and one series logged by season.
 - **6 imported screenings** with `datePrecision: 'year'` (watched 2024–2025, no day).
-- **10 watchlist items** (added by both users, with reactions).
+- **10 watchlist items** (added by both users).
+- A few liked titles (♥) for each user.
 - A current streak of 6 weeks and a best streak of 9.
 - Favorite genres for both users, and a Top 5 for each.
-- 2 provider names for "where to stream" (made-up: "StreamBox", "CineCloud").
 
 The mock movies service searches the catalog by title (case-insensitive, contains) and type. The mock recommendations service scores unwatched catalog titles by the users' genre ratings (simple weighted sum) and returns reasons such as "because you both rated Paper Moons 5 stars". Mock services throw the same `ApiError` (code, message, fields) the HTTP services throw, so error handling is identical.
 
@@ -187,7 +188,7 @@ Each HTTP service method maps 1:1 to one endpoint in section 7, and its JSDoc na
 
 - Auth guard: call `services.auth.me()`; on an `UNAUTHORIZED` ApiError redirect to `/login?next=<path>`.
 - The Log-a-watch dialog is global (not a route). Open it with the CTA, the `N` key, or `?log=1` in the URL.
-- Scope (Ours / Mine / partner) lives in the URL as `?scope=ours|mine|<username>` on Watched, Calendar and Stats, defaulting to the left page's "★ Ours" choice (stored in `localStorage`).
+- Scope (Ours / Mine) lives in the URL as `?scope=ours|mine` on Watched, Calendar and Stats, defaulting to `ours`. The partner's solo screenings are never shown; only their Profile is visible.
 
 ## 7. API contract
 
@@ -202,19 +203,21 @@ Login and session
 Layout
 - [ ] Desktop binder (≥1024 px) with header (counter, site title, **+ Log a watch**), left page, rings, right page, right-edge tabs.
 - [ ] Mobile binder (<1024 px) with tabs along the top, **no bottom bar**; Home shows the streak card + duo avatars at the top.
-- [ ] Left page: duo avatars, streak card, editable mood and status note, names, room URL, "★ Ours" scope dropdown.
+- [ ] Left page: duo avatars, streak card, dotted divider, mini calendar of my watches (days link to the Watched calendar).
+- [ ] Custom thin scrollbars; the header button is **+ Add to watchlist** on the Watchlist page.
 - [ ] Light/dark themes via CSS variables; Light is the default; choice saved per user.
 
 Home
-- [ ] Recommended: For both / For me, All / Movies / Series, top pick panel with reason and actions, 7 more picks with match %, refresh.
-- [ ] Browse by genre (chips) with trending and top-rated rows.
+- [ ] "Home" heading: For both / For me, All / Movies / Series, top pick panel with reason and actions (no streaming info), up to 12 more picks, refresh.
+- [ ] Browse with a custom genre dropdown and rows: Trending, Because you watched …, New releases, Top rated, Because you watched … (never already-watched titles).
+- [ ] All Home rows are poster-only, hide the horizontal scrollbar, show ◀ ▶ arrows while scrolling or hovering, and open a title preview.
 - [ ] Recently watched (3) and Watchlist up next (2).
 
 Watched
-- [ ] List view: scope switch, filters (watched year, genre, stars, type), grouped by month, newest first, both users' stars or "solo", comment counts, year-only imported group with "Rate it".
+- [ ] List view: scope switch, filters (watched year, genre, stars, type), grouped by month, newest first, average stars only, comment counts, year-only imported group with "Rate it".
 - [ ] Calendar view: month navigation, poster tiles per day, multi-title badge, undated note with link.
 - [ ] Stats: scope, year and month filters, 4 big numbers, genre bars, top rated, by-month chart, undated note, best streak.
-- [ ] Title detail: No. label, favorite, add to Top 5, framed poster, average, description, cast, PH providers, watch history, rewatch, edit rating, change date, comments as speech bubbles, blind rating.
+- [ ] Title detail: No. label, ♡ like, add to Top 5, framed poster, average, description, cast, watch history, rewatch, edit rating, change date, comments as speech bubbles (no "Write a comment" once I commented), blind rating.
 
 Log a watch (global dialog)
 - [ ] Search (debounced, type filter), select, watched-on date (default today, editable), who watched, season for series.
@@ -223,17 +226,17 @@ Log a watch (global dialog)
 - [ ] Same dialog in "watchlist mode" from the Watchlist page (adds to the watchlist instead, no rate step).
 
 Watchlist
-- [ ] Type filter, added-by filter, both-want sort, random pick (Spin), reactions, ✓ Watched (→ screening + rate step, card removed), plan a movie night.
+- [ ] Type filter, newest first, random pick (Spin), ✓ Watched (→ screening + rate step, card removed), plan a movie night, remove with a confirmation dialog.
 
 Profile and settings
-- [ ] Profile for either user: avatar, name, username, watched count, taste match, favorite genres, Top 5 (editable on own profile, only watched titles), watchlist (added by me / shared), recently rated. No badges.
+- [ ] Profile for either user: avatar, name, username, watched count, taste match, favorite genres, Top 5 (editable on own profile by typing a title, only watched titles), watchlist added by this user and Liked titles (clickable posters → preview), recently rated. No badges, no "Customize avatar" or "View [partner]'s profile" links.
 - [ ] Settings: avatar maker (style, hair, skin, top, extra, shuffle, save), display name, favorite genres, light/dark, change password, import CSV, app toggles, sign out, reset demo data (mocks only).
 - [ ] Import review page: matches, change match, add manually, skip, confirm.
 
 ## 9. Behavior details
 
 - **Data fetching:** every page uses TanStack Query hooks from `src/queries`, and those hooks call `services.*` only. Mutations invalidate the right keys (e.g. logging a watch invalidates `home`, `screenings`, `calendar`, `stats`, `streak`, `recommendations`, `watchlist`).
-- **Optimistic UI** for reactions, ratings and watchlist removal; roll back on error with a toast.
+- **Optimistic UI** for likes, ratings and watchlist removal; roll back on error with a toast.
 - **Loading:** pixel skeletons (DESIGN.md §7). **Empty** and **error** states on every list.
 - **Forms:** React Hook Form + Zod; show field errors from `error.fields` returned by the API.
 - **Accessibility:** follow DESIGN.md §8 (keyboard, focus rings, labels, dialogs, reduced motion).
@@ -246,7 +249,7 @@ Profile and settings
 - Every API response is parsed with its Zod schema in development (`import.meta.env.DEV`).
 - `frontend/README.md` covers setup, scripts, the services layer, how mock services work, and how to switch to the real backend (`serviceConfig.mode = 'http'`). The root `README.md` explains the three folders. `docs/API.md` holds the full contract (section 7), and `backend/README.md` points to it.
 - ESLint + Prettier. Component files under ~200 lines; split when larger.
-- Unit tests (Vitest) for the mock logic: streak, taste match, stats, blind rating, recommendation scoring, both-want sort. A few React Testing Library tests for the Log-a-watch flow and the rating input.
+- Unit tests (Vitest) for the mock logic: streak, taste match, stats, blind rating, recommendation scoring, Top rated ranking and tie-breaks, browse exclusion, privacy (404 for the partner's solo screenings). A few React Testing Library tests for the Log-a-watch flow and the rating input.
 
 ## 11. Acceptance criteria
 

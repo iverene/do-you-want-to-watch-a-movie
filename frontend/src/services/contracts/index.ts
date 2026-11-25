@@ -2,6 +2,7 @@ import type { AuthService } from './auth';
 import type { BrowseService } from './browse';
 import type { HomeService } from './home';
 import type { ImportService } from './import';
+import type { LikesService } from './likes';
 import type { MeService } from './me';
 import type { MovieNightsService } from './movieNights';
 import type { MoviesService } from './movies';
@@ -17,6 +18,7 @@ export type {
   BrowseService,
   HomeService,
   ImportService,
+  LikesService,
   MeService,
   MovieNightsService,
   MoviesService,
@@ -35,6 +37,7 @@ export interface Services {
   me: MeService;
   home: HomeService;
   movies: MoviesService;
+  likes: LikesService;
   browse: BrowseService;
   recommendations: RecommendationsService;
   screenings: ScreeningsService;

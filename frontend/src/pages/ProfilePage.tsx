@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { TitlePreview } from '@/components/dialogs/TitlePreview';
 import { TopFivePicker } from '@/components/dialogs/TopFivePicker';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { ProfileHead } from '@/components/profile/ProfileHead';
@@ -11,6 +12,7 @@ import { Segmented } from '@/components/ui/Segmented';
 import { LineSkeleton, Skeleton } from '@/components/ui/Skeleton';
 import { useSession } from '@/queries/auth';
 import { useProfile } from '@/queries/profile';
+import type { Title } from '@/services';
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -18,6 +20,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const profile = useProfile(username);
   const [picking, setPicking] = useState(false);
+  const [preview, setPreview] = useState<Title | null>(null);
   const own = username === user.username;
 
   return (
@@ -49,9 +52,10 @@ export default function ProfilePage() {
               title={<span id="top5-title">Top 5</span>}
               right={own ? <ArrowButton onClick={() => setPicking(true)}>Edit</ArrowButton> : undefined}
             />
-            <TopFive items={profile.data.topFive} />
+            <TopFive items={profile.data.topFive} onOpen={own ? undefined : setPreview} />
           </section>
-          <ProfileLists p={profile.data} own={own} />
+          <ProfileLists p={profile.data} own={own} onOpen={setPreview} />
+          {preview && <TitlePreview title={preview} onClose={() => setPreview(null)} />}
           {picking && (
             <TopFivePicker
               username={user.username}

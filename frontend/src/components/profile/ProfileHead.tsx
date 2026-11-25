@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { useGenres } from '@/queries/browse';
 import { useSession } from '@/queries/auth';
 import type { Profile } from '@/services';
@@ -35,20 +34,9 @@ export function ProfileHead({ p }: { p: Profile }) {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {own ? (
-            <>
-              <Link
-                to="/settings"
-                className="bevel inline-flex min-h-11 items-center rounded px-3 text-[13px] font-bold lg:min-h-9"
-              >
-                Customize avatar
-              </Link>
-              <ArrowLink to={`/profile/${partner.username}`}>
-                View {partner.displayName}&apos;s profile
-              </ArrowLink>
-              <ArrowLink to="/settings" className="lg:hidden">
-                Settings
-              </ArrowLink>
-            </>
+            <ArrowLink to="/settings" className="lg:hidden">
+              Settings
+            </ArrowLink>
           ) : (
             <ArrowLink to={`/profile/${user.username}`}>Back to my profile</ArrowLink>
           )}

@@ -9,7 +9,7 @@ import { Poster } from '../media/Poster';
 import { PixelAvatar } from '../pixel/PixelAvatar';
 import { useToast } from '../ui/Toast';
 import { PlanNight } from './PlanNight';
-import { Reactions } from './Reactions';
+import { ConfirmDialog } from '../dialogs/ConfirmDialog';
 
 export function WatchlistCard({ item }: { item: WatchlistItem }) {
   const { user, partner } = useSession();
@@ -19,6 +19,7 @@ export function WatchlistCard({ item }: { item: WatchlistItem }) {
   const watched = useMarkWatched();
   const remove = useRemoveFromWatchlist();
   const [planning, setPlanning] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const adder = item.addedBy === user.id ? user : partner;
   const t = item.title;
 
@@ -42,7 +43,6 @@ export function WatchlistCard({ item }: { item: WatchlistItem }) {
             <PixelAvatar avatar={adder.avatar} scale={2} /> added by {nameOf(item.addedBy)}
           </p>
         </div>
-        <Reactions item={item} />
         <div className="flex gap-1">
           <button
             type="button"
@@ -72,13 +72,25 @@ export function WatchlistCard({ item }: { item: WatchlistItem }) {
           <button
             type="button"
             aria-label={`Remove ${t.title} from the watchlist`}
-            onClick={() => remove.mutate(item.id)}
+            onClick={() => setConfirming(true)}
             className="bevel min-h-9 w-8 shrink-0 rounded font-caps text-[12px] max-lg:min-h-11 max-lg:w-11"
           >
             x
           </button>
         </div>
         {planning && <PlanNight item={item} onDone={() => setPlanning(false)} />}
+        {confirming && (
+          <ConfirmDialog
+            title="Remove from watchlist"
+            message={`Remove ${t.title} from your watchlist? You can add it back any time.`}
+            confirmLabel="Remove"
+            onClose={() => setConfirming(false)}
+            onConfirm={() => {
+              setConfirming(false);
+              remove.mutate(item.id);
+            }}
+          />
+        )}
       </div>
     </article>
   );

@@ -3,6 +3,7 @@ import { authHttp } from './auth.http';
 import { browseHttp } from './browse.http';
 import { homeHttp } from './home.http';
 import { importHttp } from './import.http';
+import { likesHttp } from './likes.http';
 import { meHttp } from './me.http';
 import { movieNightsHttp } from './movieNights.http';
 import { moviesHttp } from './movies.http';
@@ -19,6 +20,7 @@ export const httpServices: Services = {
   me: meHttp,
   home: homeHttp,
   movies: moviesHttp,
+  likes: likesHttp,
   browse: browseHttp,
   recommendations: recommendationsHttp,
   screenings: screeningsHttp,

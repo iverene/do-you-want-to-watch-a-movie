@@ -1,9 +1,9 @@
 // In-memory mock database, persisted to localStorage under serviceConfig.mockStorageKey.
 import { serviceConfig } from '../config';
-import type { Avatar, Genre, ImportStatus, MediaType, Reaction, Stars, Title } from '../types';
+import type { Avatar, Genre, ImportStatus, MediaType, Stars, Title } from '../types';
 import { buildSeed } from './seed';
 
-export const DB_VERSION = 1;
+export const DB_VERSION = 2; // 2: likes, no watchlist reactions, bigger catalog
 
 export interface DbUser {
   id: string;
@@ -43,7 +43,12 @@ export interface DbWatchlistItem {
   titleId: string;
   addedBy: string;
   addedAt: string;
-  reactions: { userId: string; reaction: Reaction }[];
+}
+
+export interface DbLike {
+  userId: string;
+  titleId: string;
+  likedAt: string;
 }
 
 export interface DbNight {
@@ -75,6 +80,7 @@ export interface Db {
   screenings: DbScreening[];
   ratings: DbRating[];
   watchlist: DbWatchlistItem[];
+  likes: DbLike[];
   nights: DbNight[];
   importRows: DbImportRow[];
   note: { mood: string; statusNote: string; history: { text: string; at: string }[] };

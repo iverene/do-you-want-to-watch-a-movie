@@ -87,7 +87,6 @@ export const watchlistItemSchema: z.ZodType<T.WatchlistItem> = z.object({
   title: titleSchema,
   addedBy: z.string(),
   addedAt: timestamp,
-  reactions: z.array(z.object({ userId: z.string(), reaction: z.enum(['want', 'maybe', 'nah']) })),
 });
 
 export const recommendationSchema: z.ZodType<T.Recommendation> = z.object({
@@ -127,6 +126,7 @@ export const profileSchema: z.ZodType<T.Profile> = z.object({
   topFive: z.array(screeningSchema.nullable()),
   watchlistAdded: z.array(watchlistItemSchema),
   recentlyRated: z.array(screeningSchema),
+  liked: z.array(titleSchema),
 });
 
 export const homeSummarySchema: z.ZodType<T.HomeSummary> = z.object({
@@ -155,11 +155,6 @@ export const movieNightSchema: z.ZodType<T.MovieNight> = z.object({
   date: isoDate,
   status: z.enum(['proposed', 'accepted', 'declined']),
   createdAt: timestamp,
-});
-
-export const providerSchema: z.ZodType<T.Provider> = z.object({
-  name: z.string(),
-  url: z.string().optional(),
 });
 
 export const historyEntrySchema: z.ZodType<T.HistoryEntry> = z.object({

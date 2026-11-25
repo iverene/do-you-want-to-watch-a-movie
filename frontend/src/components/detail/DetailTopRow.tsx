@@ -1,6 +1,6 @@
-import { useFavorite } from '@/hooks/useFavorites';
 import { formatDotted } from '@/lib/dates';
 import { useSession } from '@/queries/auth';
+import { useLike } from '@/queries/likes';
 import { useProfile, useSetTopFive } from '@/queries/profile';
 import { errorMessage, type Screening } from '@/services';
 import { ArrowLink } from '../ui/ArrowLink';
@@ -10,7 +10,7 @@ import { useToast } from '../ui/Toast';
 
 export function DetailTopRow({ s }: { s: Screening }) {
   const { user } = useSession();
-  const [fav, toggleFav] = useFavorite(user.id, s.title.id);
+  const like = useLike(s.title);
   const profile = useProfile(user.username);
   const setTop = useSetTopFive(user.username);
   const toast = useToast();
@@ -37,12 +37,12 @@ export function DetailTopRow({ s }: { s: Screening }) {
       </Tag>
       <span className="ml-auto flex gap-2">
         <PixelIconButton
-          aria-label={fav ? 'Remove from favorites' : 'Add to favorites'}
-          aria-pressed={fav}
-          tone={fav ? 'orange' : 'yellow'}
-          onClick={toggleFav}
+          aria-label={like.liked ? 'Unlike' : 'Like'}
+          aria-pressed={like.liked}
+          tone={like.liked ? 'orange' : 'yellow'}
+          onClick={like.toggle}
         >
-          {fav ? '♥' : '♡'}
+          {like.liked ? '♥' : '♡'}
         </PixelIconButton>
         {canTop && (
           <PixelIconButton

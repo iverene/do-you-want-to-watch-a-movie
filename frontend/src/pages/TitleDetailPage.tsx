@@ -13,14 +13,12 @@ import { useLogWatch } from '@/app/LogWatchContext';
 import { formatLong } from '@/lib/dates';
 import { runtime, typeLabel } from '@/lib/format';
 import { useSession } from '@/queries/auth';
-import { useProviders } from '@/queries/movies';
 import { useScreening } from '@/queries/screenings';
 import { isApiError } from '@/services';
 
 export default function TitleDetailPage() {
   const { screeningId } = useParams();
   const q = useScreening(screeningId);
-  const providers = useProviders(q.data?.screening.title.id);
   const { users, user, partner } = useSession();
   const { open } = useLogWatch();
 
@@ -49,7 +47,7 @@ export default function TitleDetailPage() {
   const others = history.filter((h) => h.id !== s.id);
   const when = (h: { watchedOn: string | null; watchedYear: number }) =>
     h.watchedOn ? formatLong(h.watchedOn) : `sometime in ${h.watchedYear}`;
-  const provider = providers.data?.items.map((p) => p.name).join(', ');
+  const mine = s.ratings.find((r) => r.userId === user.id);
   const viewers = users.filter((u) => s.viewerIds.includes(u.id));
   const visibleCount = s.ratings.length;
   const newest = s.ratings.some((r) => Date.now() - Date.parse(r.updatedAt) < 3 * 86400_000);
@@ -99,10 +97,6 @@ export default function TitleDetailPage() {
             </p>
           )}
           <p className="text-[13px]">
-            <span className="font-extrabold">Stream in PH: </span>
-            {providers.isPending ? '…' : provider || 'not streaming right now'}
-          </p>
-          <p className="text-[13px]">
             <span className="font-extrabold">Watched </span>
             {when(s)}
             {others.length > 0 &&
@@ -119,7 +113,8 @@ export default function TitleDetailPage() {
             </span>
           }
           right={
-            s.viewerIds.includes(user.id) ? (
+            // Once you have commented, edit it from "Edit my rating" instead.
+            s.viewerIds.includes(user.id) && !mine?.comment ? (
               <ArrowButton onClick={() => open({ mode: 'rate', screening: s })}>Write a comment</ArrowButton>
             ) : undefined
           }

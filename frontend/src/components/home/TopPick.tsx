@@ -6,23 +6,18 @@ import { Tag } from '../ui/Tag';
 import { FramedPoster } from '../media/FramedPoster';
 import { useToast } from '../ui/Toast';
 import { runtime, typeLabel } from '@/lib/format';
-import { useProviders } from '@/queries/movies';
 import { useAddToWatchlist } from '@/queries/watchlist';
 import { useCreateScreening } from '@/queries/screenings';
 import { errorMessage, type Recommendation } from '@/services';
 
 export function TopPick({ pick, onSpin }: { pick: Recommendation; onSpin?: () => void }) {
   const t = pick.title;
-  const providers = useProviders(t.id);
   const add = useAddToWatchlist();
   const watch = useCreateScreening();
   const toast = useToast();
   const { open } = useLogWatch();
-  const provider = providers.data?.items[0]?.name;
 
-  const meta = [t.year, t.genres[0]?.name, runtime(t.runtimeMinutes), provider && `streaming on ${provider}`]
-    .filter(Boolean)
-    .join(' · ');
+  const meta = [t.year, t.genres[0]?.name, runtime(t.runtimeMinutes)].filter(Boolean).join(' · ');
 
   return (
     <article className="flex flex-col gap-4 rounded-lg border border-line bg-panel p-3 sm:flex-row lg:p-4">

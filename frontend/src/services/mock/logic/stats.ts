@@ -13,9 +13,29 @@ export function scopedStars(s: Screening, rater: string | null): number | null {
   return s.ratings.find((r) => r.userId === rater)?.stars ?? null;
 }
 
+/**
+ * Top rated order. Ties on stars are broken by, in turn: rated by both of you before rated by one,
+ * the more recent watch (year-only imports count as Jan 1 of their year), then title A to Z.
+ * A rewatched title appears once, with its best screening.
+ */
+export function rankTopRated<T extends { screening: Screening; stars: number }>(rows: T[]): T[] {
+  const when = (s: Screening) => s.watchedOn ?? `${s.watchedYear}-01-01`;
+  const sorted = [...rows].sort(
+    (a, b) =>
+      b.stars - a.stars ||
+      b.screening.ratings.length - a.screening.ratings.length ||
+      when(b.screening).localeCompare(when(a.screening)) ||
+      a.screening.title.title.localeCompare(b.screening.title.title),
+  );
+  const seen = new Set<string>();
+  return sorted.filter((r) =>
+    seen.has(r.screening.title.id) ? false : (seen.add(r.screening.title.id), true),
+  );
+}
+
 export function computeStats(d: Db, q: StatsQuery, viewerId: string, currentYear: number): Stats {
   const users = scopeUserIds(d, q.scope, viewerId);
-  const rater = scopeRater(d, q.scope, viewerId);
+  const rater = scopeRater(q.scope, viewerId);
   const scoped = d.screenings.filter((s) => inScope(s, users));
 
   const inPeriod = scoped.filter((s) => {
@@ -39,13 +59,11 @@ export function computeStats(d: Db, q: StatsQuery, viewerId: string, currentYear
     (a, b) => b.count - a.count || a.genre.name.localeCompare(b.genre.name),
   );
 
-  const topRated = views
-    .map((screening) => ({ screening, stars: scopedStars(screening, rater) }))
-    .filter((x): x is { screening: Screening; stars: number } => x.stars !== null)
-    .sort(
-      (a, b) => b.stars - a.stars || (b.screening.watchedOn ?? '').localeCompare(a.screening.watchedOn ?? ''),
-    )
-    .slice(0, 4);
+  const topRated = rankTopRated(
+    views
+      .map((screening) => ({ screening, stars: scopedStars(screening, rater) }))
+      .filter((x): x is { screening: Screening; stars: number } => x.stars !== null),
+  ).slice(0, 4);
 
   const chartYear = q.year ?? currentYear;
   const byMonth = Array.from({ length: 12 }, () => 0);

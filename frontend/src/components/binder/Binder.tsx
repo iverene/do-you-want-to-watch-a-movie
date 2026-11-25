@@ -32,8 +32,8 @@ export function Binder({ children, onLog }: { children: ReactNode; onLog: () => 
   }
 
   return (
-    <div className="flex min-h-full items-start justify-center px-4 py-[50px] pr-[124px]">
-      <div className="relative h-[calc(100vh-100px)] min-h-[600px] w-[min(1060px,calc(100vw-140px))] rounded-[26px] bg-frame p-4">
+    <div className="flex min-h-full items-start justify-center px-4 py-5 pr-[124px]">
+      <div className="relative h-[calc(100vh-40px)] min-h-[600px] w-[min(1400px,calc(100vw-160px))] rounded-[26px] bg-frame p-4">
         <div className="stitch flex h-full flex-col rounded-[18px] bg-inner p-3">
           <BinderHeader onLog={onLog} />
           <OfflineBar />

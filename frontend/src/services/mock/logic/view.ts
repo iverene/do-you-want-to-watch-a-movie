@@ -43,7 +43,6 @@ export function toWatchlistItem(d: Db, w: DbWatchlistItem): WatchlistItem {
     title: structuredClone(titleById(d, w.titleId)),
     addedBy: w.addedBy,
     addedAt: w.addedAt,
-    reactions: w.reactions.map((r) => ({ ...r })),
   };
 }
 
@@ -54,5 +53,12 @@ export function partnerId(d: Db, userId: string): string {
 export function screeningById(d: Db, id: string): DbScreening {
   const s = d.screenings.find((x) => x.id === id);
   if (!s) throw new ApiError('NOT_FOUND', 'That screening does not exist.');
+  return s;
+}
+
+/** A screening the viewer watched. The partner's solo screenings answer 404, like missing ones. */
+export function viewableScreening(d: Db, id: string, viewerId: string): DbScreening {
+  const s = screeningById(d, id);
+  if (!s.viewerIds.includes(viewerId)) throw new ApiError('NOT_FOUND', 'That screening does not exist.');
   return s;
 }

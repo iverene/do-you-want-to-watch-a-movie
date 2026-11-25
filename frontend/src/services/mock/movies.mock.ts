@@ -4,7 +4,6 @@ import type { Title } from '../types';
 import { save, uid } from './db';
 import { searchTitles } from './logic/search';
 import { titleById } from './logic/view';
-import { PROVIDERS } from './seed';
 import { handle, readFileDataUrl, requireUser } from './util';
 
 const MAX_POSTER_BYTES = 1_500_000;
@@ -57,15 +56,4 @@ export const moviesMock: MoviesService = {
       return { title };
     });
   },
-
-  /** Made-up PH providers, picked from the title id so they stay stable. */
-  providers: (titleId) =>
-    handle(() => {
-      const { d } = requireUser();
-      const t = titleById(d, titleId);
-      if (t.source === 'manual') return { items: [] };
-      const n = Number(t.id.replace(/\D/g, '')) || 0;
-      const picks = n % 3 === 0 ? PROVIDERS : n % 3 === 1 ? [PROVIDERS[0]] : [PROVIDERS[1]];
-      return { items: picks.map((name) => ({ name })) };
-    }),
 };

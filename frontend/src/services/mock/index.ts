@@ -3,6 +3,7 @@ import { authMock } from './auth.mock';
 import { browseMock } from './browse.mock';
 import { homeMock } from './home.mock';
 import { importMock } from './import.mock';
+import { likesMock } from './likes.mock';
 import { meMock } from './me.mock';
 import { movieNightsMock } from './movieNights.mock';
 import { moviesMock } from './movies.mock';
@@ -21,6 +22,7 @@ export const mockServices: Services = {
   me: meMock,
   home: homeMock,
   movies: moviesMock,
+  likes: likesMock,
   browse: browseMock,
   recommendations: recommendationsMock,
   screenings: screeningsMock,
