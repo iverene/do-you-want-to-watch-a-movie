@@ -1,7 +1,7 @@
 import type { UsersService } from '../contracts';
 import { ApiError } from '../errors';
 import { coupleTasteMatch } from './logic/couple';
-import { toScreening, toWatchlistItem } from './logic/view';
+import { titleById, toScreening, toWatchlistItem } from './logic/view';
 import { handle, publicUser, requireUser } from './util';
 
 export const usersMock: UsersService = {
@@ -32,6 +32,10 @@ export const usersMock: UsersService = {
           .sort((a, b) => b.addedAt.localeCompare(a.addedAt))
           .map((w) => toWatchlistItem(d, w)),
         recentlyRated,
+        liked: d.likes
+          .filter((l) => l.userId === user.id)
+          .sort((a, b) => b.likedAt.localeCompare(a.likedAt))
+          .map((l) => structuredClone(titleById(d, l.titleId))),
       };
     }),
 };

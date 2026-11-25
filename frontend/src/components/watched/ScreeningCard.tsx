@@ -6,7 +6,7 @@ import { useSession } from '@/queries/auth';
 import type { Screening } from '@/services';
 import { CommentIcon } from '../comments/CommentIcon';
 import { Poster } from '../media/Poster';
-import { UserStars } from './UserStars';
+import { AverageStars } from './AverageStars';
 
 export function ScreeningCard({ s }: { s: Screening }) {
   const { user } = useSession();
@@ -36,7 +36,7 @@ export function ScreeningCard({ s }: { s: Screening }) {
         {s.watchedOn ? formatShort(s.watchedOn) : s.watchedYear} · {typeLabel(s.title.mediaType)}
         {s.season && ` S${s.season}`}
       </span>
-      <UserStars s={s} />
+      <AverageStars s={s} />
       {canRate && (
         <button
           type="button"

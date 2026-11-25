@@ -3,7 +3,6 @@ import {
   services,
   type MarkWatchedBody,
   type RandomQuery,
-  type Reaction,
   type WatchlistItem,
   type WatchlistQuery,
 } from '@/services';
@@ -49,44 +48,6 @@ export function useRemoveFromWatchlist() {
     },
     onSettled: () =>
       Promise.all(['watchlist', 'home', 'profile'].map((k) => qc.invalidateQueries({ queryKey: [k] }))),
-  });
-}
-
-/** Optimistic reaction change, rolled back with a toast on error. */
-export function useReact(userId: string) {
-  const qc = useQueryClient();
-  const toast = useToast();
-  return useMutation({
-    mutationFn: ({ id, reaction }: { id: string; reaction: Reaction | null }) =>
-      services.watchlist.react(id, { reaction }),
-    onMutate: async ({ id, reaction }) => {
-      await qc.cancelQueries({ queryKey: ['watchlist'] });
-      const snapshot = qc.getQueriesData<ListData>({ queryKey: ['watchlist'] });
-      qc.setQueriesData<ListData>({ queryKey: ['watchlist'] }, (d) =>
-        d
-          ? {
-              ...d,
-              items: d.items.map((i) =>
-                i.id !== id
-                  ? i
-                  : {
-                      ...i,
-                      reactions: [
-                        ...i.reactions.filter((r) => r.userId !== userId),
-                        ...(reaction ? [{ userId, reaction }] : []),
-                      ],
-                    },
-              ),
-            }
-          : d,
-      );
-      return { snapshot };
-    },
-    onError: (e, _v, ctx) => {
-      ctx?.snapshot.forEach(([key, data]) => qc.setQueryData<ListData>(key, data));
-      toast.show(errorMessage(e), 'error');
-    },
-    onSettled: () => Promise.all(['watchlist', 'home'].map((k) => qc.invalidateQueries({ queryKey: [k] }))),
   });
 }
 

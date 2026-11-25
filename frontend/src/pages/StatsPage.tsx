@@ -118,7 +118,7 @@ export default function StatsPage() {
               <section aria-labelledby="top-title" className="flex flex-col gap-2">
                 <SectionHeader
                   title={<span id="top-title">Top rated</span>}
-                  sub={scope === 'ours' ? 'AVERAGE OF YOU TWO' : 'THEIR OWN STARS'}
+                  sub={scope === 'ours' ? 'AVERAGE OF YOU TWO' : 'YOUR OWN STARS'}
                 />
                 {stats.data.topRated.length === 0 ? (
                   <p className="font-hand text-[17px] text-muted">rate a few titles to see these.</p>

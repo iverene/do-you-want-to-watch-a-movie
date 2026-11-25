@@ -4,7 +4,7 @@ import { nowIso, save } from './db';
 import { createScreening } from './logic/createScreening';
 import { compareScreenings, inScope, scopeRater, scopeUserIds } from './logic/scope';
 import { scopedStars } from './logic/stats';
-import { screeningById, toScreening } from './logic/view';
+import { toScreening, viewableScreening } from './logic/view';
 import { assertDate, assertNotFuture, handle, requireUser, today } from './util';
 
 export const screeningsMock: ScreeningsService = {
@@ -12,7 +12,7 @@ export const screeningsMock: ScreeningsService = {
     handle(() => {
       const { d, me } = requireUser();
       const users = scopeUserIds(d, f.scope, me.id);
-      const rater = scopeRater(d, f.scope, me.id);
+      const rater = scopeRater(f.scope, me.id);
       const all = d.screenings
         .filter((s) => inScope(s, users))
         .filter((s) => f.year === undefined || s.watchedYear === f.year)
@@ -56,9 +56,9 @@ export const screeningsMock: ScreeningsService = {
   get: (id) =>
     handle(() => {
       const { d, me } = requireUser();
-      const s = screeningById(d, id);
+      const s = viewableScreening(d, id, me.id);
       const history = d.screenings
-        .filter((x) => x.titleId === s.titleId)
+        .filter((x) => x.titleId === s.titleId && x.viewerIds.includes(me.id))
         .sort(compareScreenings)
         .map(({ id: hid, watchedOn, watchedYear }) => ({ id: hid, watchedOn, watchedYear }));
       return { screening: toScreening(d, s, me.id), history };
@@ -77,7 +77,7 @@ export const screeningsMock: ScreeningsService = {
   update: (id, body) =>
     handle(() => {
       const { d, me } = requireUser();
-      const s = screeningById(d, id);
+      const s = viewableScreening(d, id, me.id);
       if (body.watchedOn !== undefined) {
         assertNotFuture(body.watchedOn);
         s.watchedOn = body.watchedOn;
@@ -98,8 +98,8 @@ export const screeningsMock: ScreeningsService = {
 
   remove: (id) =>
     handle(() => {
-      const { d } = requireUser();
-      screeningById(d, id);
+      const { d, me } = requireUser();
+      viewableScreening(d, id, me.id);
       d.screenings = d.screenings.filter((s) => s.id !== id);
       d.ratings = d.ratings.filter((r) => r.screeningId !== id);
       for (const u of d.users) u.topFive = u.topFive.map((x) => (x === id ? null : x));
@@ -109,7 +109,7 @@ export const screeningsMock: ScreeningsService = {
   rate: (id, body) =>
     handle(() => {
       const { d, me } = requireUser();
-      const s = screeningById(d, id);
+      const s = viewableScreening(d, id, me.id);
       if (!s.viewerIds.includes(me.id))
         throw new ApiError('FORBIDDEN', 'You can only rate what you watched.');
       if (![1, 2, 3, 4, 5].includes(body.stars)) {

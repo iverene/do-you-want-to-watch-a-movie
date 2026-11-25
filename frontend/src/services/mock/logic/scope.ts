@@ -2,13 +2,14 @@ import { ApiError } from '../../errors';
 import type { Scope } from '../../types';
 import type { Db, DbScreening } from '../db';
 
-/** The user ids a scope must include: ours = both, mine = me, <username> = that person. */
+/**
+ * The user ids a scope must include: ours = both (watched together), mine = me. The partner's own
+ * history is private (only their profile is shared), so there is no scope for it.
+ */
 export function scopeUserIds(d: Db, scope: Scope, viewerId: string): string[] {
   if (scope === 'ours') return d.users.map((u) => u.id);
   if (scope === 'mine') return [viewerId];
-  const user = d.users.find((u) => u.username === scope);
-  if (!user) throw new ApiError('VALIDATION', 'Unknown scope.', { scope: 'Use ours, mine or a username.' });
-  return [user.id];
+  throw new ApiError('VALIDATION', 'Unknown scope.', { scope: 'Use ours or mine.' });
 }
 
 export function inScope(s: DbScreening, userIds: string[]): boolean {
@@ -16,8 +17,8 @@ export function inScope(s: DbScreening, userIds: string[]): boolean {
 }
 
 /** The single user whose own stars count in a personal scope, or null for "ours". */
-export function scopeRater(d: Db, scope: Scope, viewerId: string): string | null {
-  return scope === 'ours' ? null : scopeUserIds(d, scope, viewerId)[0];
+export function scopeRater(scope: Scope, viewerId: string): string | null {
+  return scope === 'ours' ? null : viewerId;
 }
 
 /** Newest first; within a year, year-only screenings come after the dated ones. */

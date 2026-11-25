@@ -3,18 +3,15 @@ import { ApiError } from '../errors';
 import { nowIso, save, uid } from './db';
 import { createScreening } from './logic/createScreening';
 import { titleById, toScreening, toWatchlistItem } from './logic/view';
-import { sortWatchlist } from './logic/watchlistSort';
 import { handle, requireUser, today } from './util';
 
 export const watchlistMock: WatchlistService = {
-  list: ({ type = 'all', addedBy, sort = 'both_want' }) =>
+  /** Newest first. The watchlist is shared by the two of you. */
+  list: ({ type = 'all', addedBy }) =>
     handle(() => {
       const { d } = requireUser();
-      const items = sortWatchlist(
-        d.watchlist,
-        sort,
-        d.users.map((u) => u.id),
-      )
+      const items = [...d.watchlist]
+        .sort((a, b) => b.addedAt.localeCompare(a.addedAt))
         .filter((w) => !addedBy || w.addedBy === addedBy)
         .map((w) => toWatchlistItem(d, w))
         .filter((w) => type === 'all' || w.title.mediaType === type);
@@ -27,7 +24,7 @@ export const watchlistMock: WatchlistService = {
       titleById(d, titleId);
       if (d.watchlist.some((w) => w.titleId === titleId))
         throw new ApiError('CONFLICT', "It's already on the watchlist.");
-      const item = { id: uid('w'), titleId, addedBy: me.id, addedAt: nowIso(), reactions: [] };
+      const item = { id: uid('w'), titleId, addedBy: me.id, addedAt: nowIso() };
       d.watchlist.push(item);
       save();
       return { item: toWatchlistItem(d, item) };
@@ -39,17 +36,6 @@ export const watchlistMock: WatchlistService = {
       if (!d.watchlist.some((w) => w.id === id)) throw new ApiError('NOT_FOUND', 'Not on the watchlist.');
       d.watchlist = d.watchlist.filter((w) => w.id !== id);
       save();
-    }),
-
-  react: (id, { reaction }) =>
-    handle(() => {
-      const { d, me } = requireUser();
-      const item = d.watchlist.find((w) => w.id === id);
-      if (!item) throw new ApiError('NOT_FOUND', 'Not on the watchlist.');
-      item.reactions = item.reactions.filter((r) => r.userId !== me.id);
-      if (reaction) item.reactions.push({ userId: me.id, reaction });
-      save();
-      return { item: toWatchlistItem(d, item) };
     }),
 
   /** POST /watchlist/:id/watched — logs a screening (today, both by default) and removes the item. */

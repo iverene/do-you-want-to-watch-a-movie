@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
-import { typeLabel } from '@/lib/format';
 import { useRecommendations, useRefreshRecommendations } from '@/queries/recommendations';
 import type { RecommendationFor, TypeFilter } from '@/services';
 import { EmptyState } from '../feedback/EmptyState';
 import { ErrorState } from '../feedback/ErrorState';
-import { PosterCard } from '../media/PosterCard';
 import { ArrowButton } from '../ui/ArrowLink';
 import { SectionHeader } from '../ui/SectionHeader';
 import { Segmented } from '../ui/Segmented';
 import { PosterSkeletonRow, Skeleton } from '../ui/Skeleton';
+import { PosterRow } from './PosterRow';
 import { TopPick } from './TopPick';
 
 export function Recommended() {
@@ -22,13 +21,13 @@ export function Recommended() {
 
   const all = recs.data ? [recs.data.top, ...recs.data.items].filter((r) => r !== null) : [];
   const top = all.length ? all[spin % all.length] : null;
-  const rest = all.filter((r) => r !== top).slice(0, desktop ? 7 : 4);
+  const rest = all.filter((r) => r !== top).slice(0, 12);
 
   return (
-    <section aria-labelledby="rec-title" className="flex flex-col gap-3">
+    <section aria-labelledby="home-title" className="flex flex-col gap-3">
       <SectionHeader
-        title={<span id="rec-title">Recommended</span>}
-        sub="AI PICKS FROM YOUR RATINGS"
+        as="h1"
+        title={<span id="home-title">Home</span>}
         right={
           <>
             <Segmented
@@ -84,21 +83,11 @@ export function Recommended() {
               {refresh.isPending ? 'Refreshing..' : 'Refresh'}
             </ArrowButton>
           </div>
-          <ul className="grid grid-cols-2 gap-3 min-[400px]:grid-cols-4 lg:grid-cols-7">
-            {rest.map((r) => (
-              <li key={r.title.id}>
-                <PosterCard
-                  title={r.title.title}
-                  posterUrl={r.title.posterUrl}
-                  tintKey={r.title.id}
-                  posterClass="w-full"
-                  meta={`${r.title.year ?? ''} · ${typeLabel(r.title.mediaType)}`}
-                  extra={<span className="font-bold text-orange">{r.matchPercent}% match</span>}
-                />
-              </li>
-            ))}
-          </ul>
-          {rest.length < (desktop ? 7 : 4) && (
+          <PosterRow
+            label="More picks for you"
+            items={rest.map((r) => ({ title: r.title, note: `${r.matchPercent}% match · ${r.reason}` }))}
+          />
+          {rest.length < 4 && (
             <p className="font-hand text-[17px] text-muted">
               {rest.length ? "that's every pick for now." : 'no more picks for now.'} rate a few more watches
               and we'll find new ones.

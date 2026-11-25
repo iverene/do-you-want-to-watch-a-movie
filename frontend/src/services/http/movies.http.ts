@@ -1,5 +1,5 @@
 import type { MoviesService } from '../contracts';
-import { itemsOf, providerSchema, titleEnvelope, titleSchema } from '../schemas';
+import { itemsOf, titleEnvelope, titleSchema } from '../schemas';
 import { request } from './client';
 
 export const moviesHttp: MoviesService = {
@@ -19,7 +19,4 @@ export const moviesHttp: MoviesService = {
     else if (input.posterUrl) form.set('posterUrl', input.posterUrl);
     return request('POST', '/movies/manual', { form, schema: titleEnvelope });
   },
-  /** GET /movies/:titleId/providers?region= */
-  providers: (titleId, region) =>
-    request('GET', `/movies/${titleId}/providers`, { query: { region }, schema: itemsOf(providerSchema) }),
 };

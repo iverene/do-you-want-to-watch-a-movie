@@ -1,6 +1,7 @@
 import { serviceConfig } from '../config';
 import { isApiError } from '../errors';
-import { seed } from './db';
+import { db, seed } from './db';
+import { SAM } from './seed';
 import { mockServices as api } from './index';
 
 afterAll(() => vi.useRealTimers());
@@ -60,7 +61,7 @@ describe('mock services', () => {
 
   it('rejects a Top 5 with unwatched titles (422)', async () => {
     await login('alex');
-    const solo = (await api.screenings.list({ scope: 'sam' })).items.find((s) => s.viewerIds.length === 1)!;
+    const solo = db().screenings.find((s) => s.viewerIds.length === 1 && s.viewerIds[0] === SAM)!;
     await expect(api.me.setTopFive({ screeningIds: [solo.id, null, null, null, null] })).rejects.toSatisfy(
       (e) => isApiError(e, 'VALIDATION'),
     );
@@ -83,5 +84,66 @@ describe('mock services', () => {
     expect(await api.import.confirm()).toEqual({ imported: 1, skipped: 1 });
     const again = await api.import.upload(file);
     expect(again.rows[0].status).toBe('imported');
+  });
+
+  it("keeps the partner's solo history private", async () => {
+    await login('alex');
+    const samSolo = db().screenings.find((s) => s.viewerIds.length === 1 && s.viewerIds[0] === SAM)!;
+    await expect(api.screenings.get(samSolo.id)).rejects.toSatisfy((e) => isApiError(e, 'NOT_FOUND'));
+    await expect(api.screenings.list({ scope: 'sam' as never })).rejects.toSatisfy((e) =>
+      isApiError(e, 'VALIDATION'),
+    );
+    const mine = await api.screenings.list({ scope: 'mine' });
+    expect(mine.items.every((s) => s.viewerIds.includes('u-alex'))).toBe(true);
+    // ...but Sam's profile is shared.
+    const profile = await api.users.getProfile('sam');
+    expect(profile.liked.length).toBeGreaterThan(0);
+  });
+
+  it('likes and unlikes a title, separately from Top 5', async () => {
+    await login('sam');
+    const before = (await api.likes.list()).items.length;
+    await api.likes.like('t-41');
+    await api.likes.like('t-41');
+    expect((await api.likes.list()).items.map((t) => t.id)).toContain('t-41');
+    expect((await api.likes.list()).items).toHaveLength(before + 1);
+    await api.likes.unlike('t-41');
+    expect((await api.likes.list()).items).toHaveLength(before);
+  });
+
+  it('never lists already-watched titles in Browse, and finds similar ones', async () => {
+    await login('alex');
+    const watched = new Set(
+      db()
+        .screenings.filter((s) => s.viewerIds.includes('u-alex'))
+        .map((s) => s.titleId),
+    );
+    for (const category of ['trending', 'top_rated', 'new_releases'] as const) {
+      const { items } = await api.browse.list({ category });
+      expect(items.length).toBeGreaterThan(5);
+      expect(items.some((t) => watched.has(t.id))).toBe(false);
+    }
+    const base = db().titles.find((t) => t.id === 't-12')!;
+    const similar = await api.browse.list({ category: 'because', titleId: base.id });
+    expect(similar.items.length).toBeGreaterThan(0);
+    expect(similar.items.every((t) => t.genres.some((g) => base.genres.some((b) => b.id === g.id)))).toBe(
+      true,
+    );
+    await expect(api.browse.list({ category: 'because' })).rejects.toSatisfy((e) =>
+      isApiError(e, 'VALIDATION'),
+    );
+  });
+
+  it('breaks Top rated ties by number of ratings, then the latest watch', async () => {
+    await login('alex');
+    const { topRated } = await api.stats.get({ scope: 'ours' });
+    const ids = topRated.map((r) => r.screening.title.id);
+    expect(new Set(ids).size).toBe(ids.length); // a rewatch is listed once
+    for (let i = 1; i < topRated.length; i++) {
+      const [a, b] = [topRated[i - 1], topRated[i]];
+      expect(a.stars).toBeGreaterThanOrEqual(b.stars);
+      if (a.stars === b.stars)
+        expect(a.screening.ratings.length).toBeGreaterThanOrEqual(b.screening.ratings.length);
+    }
   });
 });

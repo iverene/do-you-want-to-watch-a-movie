@@ -28,6 +28,45 @@
   button:disabled {
     cursor: not-allowed;
   }
+
+  /* Retro scrollbars: a slim pill on a dotted track. Firefox gets the colors only (Chrome ignores
+     ::-webkit-scrollbar once scrollbar-color is set, so that stays Firefox-only). */
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--tab) transparent;
+    }
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: repeating-linear-gradient(var(--line) 0 2px, transparent 2px 6px) center / 2px 100% no-repeat;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--tab);
+    border: 2px solid var(--paper);
+    border-radius: 999px;
+    box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--frame);
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  /* Scrolls, but shows no scrollbar (the browse rows use arrow buttons instead). */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer components {

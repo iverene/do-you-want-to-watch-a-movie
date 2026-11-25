@@ -1,11 +1,10 @@
 // Sample data for the mock services. All titles, people and providers are made up.
-import type { Avatar, Genre, MediaType, Reaction, Stars, Title } from '../types';
-import type { Db, DbRating, DbScreening, DbUser, DbWatchlistItem } from './db';
+import type { Avatar, Genre, MediaType, Stars, Title } from '../types';
+import type { Db, DbLike, DbRating, DbScreening, DbUser, DbWatchlistItem } from './db';
 
 export const ALEX = 'u-alex';
 export const SAM = 'u-sam';
 export const SEED_PASSWORD = 'movienight2026';
-export const PROVIDERS = ['StreamBox', 'CineCloud'];
 
 export const GENRES: Genre[] = [
   ['drama', 'Drama'],
@@ -331,6 +330,182 @@ const SERIES: Row[] = [
   ],
 ];
 
+// Catalog-only titles (t-41 to t-64): nobody has watched them yet, so Browse and the
+// recommendations always have something new to show.
+const MORE_MOVIES: Row[] = [
+  [
+    'The Umbrella Thief',
+    2025,
+    ['comedy', 'crime'],
+    101,
+    'Every rainy day in the city, one umbrella goes missing. Today it was the mayor’s.',
+  ],
+  [
+    'Saltwater Letters',
+    2024,
+    ['romance', 'drama'],
+    118,
+    'Two pen pals on opposite coasts agree never to meet. Then a ferry breaks down.',
+  ],
+  [
+    'Signal Lost at Dawn',
+    2026,
+    ['scifi', 'thriller'],
+    109,
+    'A night-shift radio host hears tomorrow’s news an hour early.',
+  ],
+  [
+    'The Last Jeepney',
+    2025,
+    ['drama', 'comedy'],
+    96,
+    'A driver’s final route before retirement picks up everyone he ever owed a favor.',
+  ],
+  [
+    'Mapmakers of Mars',
+    2026,
+    ['scifi', 'adventure'],
+    127,
+    'Three surveyors name every crater, and one of them names it after the wrong person.',
+  ],
+  [
+    'Velvet Static',
+    2024,
+    ['mystery', 'thriller'],
+    104,
+    'A TV repairwoman finds the same face in every broken screen.',
+  ],
+  [
+    'Pancake Weather',
+    2023,
+    ['comedy', 'romance'],
+    92,
+    'A weather girl who is always wrong falls for the man who bets against her.',
+  ],
+  [
+    'The Orchard Detective',
+    2025,
+    ['mystery', 'comedy'],
+    99,
+    'Someone is stealing exactly one mango a night, and the farm cat knows who.',
+  ],
+  [
+    'Underneath the Lake',
+    2026,
+    ['horror', 'mystery'],
+    103,
+    'The town drained the lake for the first time in a century. It should not have.',
+  ],
+  [
+    'Small Hours',
+    2024,
+    ['drama'],
+    115,
+    'A hospital night shift, told in real time, from midnight until four.',
+  ],
+  [
+    'Copper and Clover',
+    2025,
+    ['animation', 'adventure'],
+    88,
+    'A wind-up robot and a field mouse cross the meadow before the mower comes.',
+  ],
+  [
+    'The Thousand-Step Stair',
+    2023,
+    ['fantasy', 'adventure'],
+    121,
+    'A stair that changes length every time you count it, and the girl who climbs it.',
+  ],
+  [
+    'Room Above the Bakery',
+    2026,
+    ['romance', 'comedy'],
+    97,
+    'Two strangers rent the same room by accident and split the week down the middle.',
+  ],
+  [
+    'Low Tide Choir',
+    2024,
+    ['documentary'],
+    84,
+    'A fishing village choir rehearses for the contest they lose every single year.',
+  ],
+  [
+    'Glass Garden',
+    2025,
+    ['fantasy', 'drama'],
+    113,
+    'A glassblower’s flowers start blooming, and so do her old regrets.',
+  ],
+  [
+    'Midnight Ledger',
+    2026,
+    ['crime', 'drama'],
+    119,
+    'A bookkeeper finds an extra zero, then an extra name, then an extra body.',
+  ],
+];
+const MORE_SERIES: Row[] = [
+  [
+    'Lighthouse Radio',
+    2025,
+    ['mystery', 'drama'],
+    46,
+    'A pirate radio station broadcasts from a lighthouse that has no keeper.',
+    2,
+  ],
+  [
+    'Office of Lost Socks',
+    2024,
+    ['comedy'],
+    24,
+    'A government office whose only job is to return lost socks. Funding is low.',
+    3,
+  ],
+  [
+    'Orbit Kitchen',
+    2026,
+    ['scifi', 'comedy'],
+    28,
+    'A cooking show filmed on a space station with one working oven.',
+    1,
+  ],
+  [
+    'The Night Market Files',
+    2025,
+    ['crime', 'mystery'],
+    50,
+    'Each episode, a different stall owner solves a different case.',
+    2,
+  ],
+  [
+    'Hearts on Platform 9',
+    2024,
+    ['romance', 'drama'],
+    42,
+    'Commuters on the same train platform, a new love story every season.',
+    3,
+  ],
+  [
+    'Little Monsters Daycare',
+    2023,
+    ['animation', 'comedy'],
+    22,
+    'A daycare for young monsters, run by a very tired human.',
+    2,
+  ],
+  ['Wild Coast', 2026, ['documentary'], 55, 'A year on the coastline, one tide at a time.', 1],
+  [
+    'The Haunted Homestay',
+    2025,
+    ['horror', 'comedy'],
+    34,
+    'The reviews say five stars, but mention the guest in room 3.',
+    1,
+  ],
+];
+
 function toTitle(row: Row, i: number, mediaType: MediaType): Title {
   const [title, year, genreIds, runtime, overview, seasons] = row;
   const castCount = 3 + (i % 3);
@@ -356,6 +531,8 @@ function toTitle(row: Row, i: number, mediaType: MediaType): Title {
 export const TITLES: Title[] = [
   ...MOVIES.map((r, i) => toTitle(r, i, 'movie')),
   ...SERIES.map((r, i) => toTitle(r, i + MOVIES.length, 'tv')),
+  ...MORE_MOVIES.map((r, i) => toTitle(r, i + MOVIES.length + SERIES.length, 'movie')),
+  ...MORE_SERIES.map((r, i) => toTitle(r, i + MOVIES.length + SERIES.length + MORE_MOVIES.length, 'tv')),
 ];
 
 const tid = (n: number) => `t-${String(n).padStart(2, '0')}`;
@@ -399,19 +576,29 @@ const IMPORTED: [number, number, number, number][] = [
   [23, 2025, 0, 0],
 ];
 
-// [titleNo, addedBy, addedAt, alexReaction, samReaction]
-type R = Reaction | null;
-const WATCHLIST: [number, string, string, R, R][] = [
-  [19, ALEX, '2026-11-20T12:00:00+08:00', 'want', 'want'],
-  [30, SAM, '2026-11-19T21:00:00+08:00', 'want', 'want'],
-  [7, ALEX, '2026-11-15T19:30:00+08:00', 'want', 'maybe'],
-  [15, SAM, '2026-11-10T20:00:00+08:00', null, 'want'],
-  [22, ALEX, '2026-11-02T18:00:00+08:00', 'want', null],
-  [34, SAM, '2026-10-28T22:00:00+08:00', 'maybe', 'want'],
-  [26, ALEX, '2026-10-21T17:00:00+08:00', 'want', 'nah'],
-  [38, SAM, '2026-10-12T10:00:00+08:00', 'maybe', 'want'],
-  [29, ALEX, '2026-09-30T09:00:00+08:00', 'want', 'want'],
-  [40, SAM, '2026-09-14T16:00:00+08:00', null, 'want'],
+// [titleNo, addedBy, addedAt]
+const WATCHLIST: [number, string, string][] = [
+  [19, ALEX, '2026-11-20T12:00:00+08:00'],
+  [30, SAM, '2026-11-19T21:00:00+08:00'],
+  [7, ALEX, '2026-11-15T19:30:00+08:00'],
+  [15, SAM, '2026-11-10T20:00:00+08:00'],
+  [22, ALEX, '2026-11-02T18:00:00+08:00'],
+  [34, SAM, '2026-10-28T22:00:00+08:00'],
+  [26, ALEX, '2026-10-21T17:00:00+08:00'],
+  [38, SAM, '2026-10-12T10:00:00+08:00'],
+  [29, ALEX, '2026-09-30T09:00:00+08:00'],
+  [40, SAM, '2026-09-14T16:00:00+08:00'],
+];
+
+// [userId, titleNo, likedAt]: ♡ on a title. Not the same as Top 5.
+const LIKES: [string, number, string][] = [
+  [ALEX, 12, '2026-10-17T23:00:00+08:00'],
+  [ALEX, 5, '2026-11-21T23:00:00+08:00'],
+  [ALEX, 31, '2026-11-14T23:00:00+08:00'],
+  [ALEX, 19, '2026-11-20T12:05:00+08:00'],
+  [SAM, 1, '2026-11-07T23:00:00+08:00'],
+  [SAM, 36, '2026-11-18T23:00:00+08:00'],
+  [SAM, 10, '2026-09-19T23:00:00+08:00'],
 ];
 
 const avatar = (a: Avatar) => a;
@@ -497,16 +684,13 @@ export function buildSeed(version: number): Db {
   users[0].topFive = [byTitle(12), byTitle(1), byTitle(2), byTitle(5), byTitle(4)];
   users[1].topFive = [byTitle(1), byTitle(10), byTitle(12), byTitle(36), null];
 
-  const watchlist: DbWatchlistItem[] = WATCHLIST.map(([t, by, at, ra, rs], i) => ({
+  const watchlist: DbWatchlistItem[] = WATCHLIST.map(([t, by, at], i) => ({
     id: `w-${String(i + 1).padStart(2, '0')}`,
     titleId: tid(t),
     addedBy: by,
     addedAt: at,
-    reactions: [
-      ...(ra ? [{ userId: ALEX, reaction: ra }] : []),
-      ...(rs ? [{ userId: SAM, reaction: rs }] : []),
-    ],
   }));
+  const likes: DbLike[] = LIKES.map(([userId, t, likedAt]) => ({ userId, titleId: tid(t), likedAt }));
 
   return {
     version,
@@ -516,6 +700,7 @@ export function buildSeed(version: number): Db {
     screenings,
     ratings,
     watchlist,
+    likes,
     nights: [
       {
         id: 'n-1',

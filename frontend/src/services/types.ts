@@ -1,7 +1,8 @@
 // Types for every request and response in docs/API.md. Keep in sync with schemas.ts.
 
 export type MediaType = 'movie' | 'tv';
-export type Scope = 'ours' | 'mine' | string; // string = a username
+/** ours = watched together, mine = everything I watched. The partner's solo history is private. */
+export type Scope = 'ours' | 'mine';
 export type TypeFilter = MediaType | 'all';
 
 export interface Avatar {
@@ -74,14 +75,11 @@ export interface Screening {
   hiddenPartnerRating: boolean;
 }
 
-export type Reaction = 'want' | 'maybe' | 'nah';
-
 export interface WatchlistItem {
   id: string;
   title: Title;
   addedBy: string;
   addedAt: string;
-  reactions: { userId: string; reaction: Reaction }[];
 }
 
 export interface Recommendation {
@@ -124,6 +122,7 @@ export interface Profile {
   topFive: (Screening | null)[];
   watchlistAdded: WatchlistItem[];
   recentlyRated: Screening[];
+  liked: Title[];
 }
 
 export interface HomeSummary {
@@ -154,11 +153,6 @@ export interface MovieNight {
   date: string;
   status: 'proposed' | 'accepted' | 'declined';
   createdAt: string;
-}
-
-export interface Provider {
-  name: string;
-  url?: string;
 }
 
 export interface HistoryEntry {
@@ -218,7 +212,15 @@ export interface ManualTitleInput {
   posterUrl?: string;
 }
 
-export type BrowseCategory = 'trending' | 'top_rated' | 'genre';
+export type BrowseCategory = 'trending' | 'top_rated' | 'new_releases' | 'because' | 'genre';
+
+export interface BrowseQuery {
+  category: BrowseCategory;
+  genreId?: string;
+  type?: TypeFilter;
+  /** Required for `because`: the watched title to find similar ones for. */
+  titleId?: string;
+}
 export type RecommendationFor = 'both' | 'me';
 
 export interface StatsQuery {
@@ -230,7 +232,6 @@ export interface StatsQuery {
 export interface WatchlistQuery {
   type?: TypeFilter;
   addedBy?: string;
-  sort?: 'both_want' | 'newest';
 }
 
 export interface RandomQuery {

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { renderApp } from '@/test/renderApp';
 
 describe('app pages on mock data', () => {
@@ -37,7 +37,8 @@ describe('app pages on mock data', () => {
   it('shows stats with the four big numbers', async () => {
     renderApp('/watched/stats?scope=ours&year=2026');
     expect(await screen.findByText('Total watched')).toBeInTheDocument();
-    expect(screen.getAllByText('18')).toHaveLength(2); // total and together
+    const { within } = await import('@testing-library/react');
+    expect(within(screen.getByRole('main')).getAllByText('18')).toHaveLength(2); // total and together
     expect(screen.getByText(/best streak 9 weeks/)).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Titles per month in 2026/ })).toBeInTheDocument();
   });
@@ -90,11 +91,13 @@ describe('profile', () => {
     renderApp('/profile/alex');
     await user.click(await screen.findByRole('button', { name: 'Edit' }));
     const dialog = await screen.findByRole('dialog', { name: 'Top 5' });
-    const slot5 = await within(dialog).findByLabelText('Number 5');
-    const labels = [...(slot5 as HTMLSelectElement).options].map((o) => o.text);
-    expect(labels.some((l) => l.startsWith('Signal from Vega'))).toBe(false); // on the watchlist, not watched
-    expect(labels.some((l) => l.startsWith('Night Bus 42'))).toBe(true);
-    await user.selectOptions(slot5, labels.find((l) => l.startsWith('Night Bus 42'))!);
+    const slot5 = await within(dialog).findByRole('combobox', { name: 'Number 5' });
+    await user.type(slot5, 'signal');
+    expect(within(dialog).getByText('No watched title matches.')).toBeInTheDocument(); // on the watchlist, not watched
+    await user.clear(slot5);
+    await user.type(slot5, 'night bus');
+    await user.click(within(dialog).getByRole('option', { name: /Night Bus 42/ }));
+    expect(slot5).toHaveValue('Night Bus 42 (2023)');
     await user.click(within(dialog).getByRole('button', { name: /Save Top 5/ }));
     expect(await screen.findByText(/Top 5 saved/)).toBeInTheDocument();
   });
@@ -166,5 +169,61 @@ describe('mobile layout', () => {
     } finally {
       window.matchMedia = original;
     }
+  });
+});
+
+describe('revisions', () => {
+  it('asks before removing a watchlist title, and the header button adds to the watchlist', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const { within } = await import('@testing-library/react');
+    const user = userEvent.setup();
+    renderApp('/watchlist');
+    expect(await screen.findByRole('button', { name: /Add to watchlist/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Log a watch/ })).not.toBeInTheDocument();
+    const card = await screen.findByRole('article', { name: 'Signal from Vega' });
+    expect(within(card).queryByRole('button', { name: 'want' })).not.toBeInTheDocument();
+    await user.click(within(card).getByRole('button', { name: /Remove Signal from Vega/ }));
+    const dialog = await screen.findByRole('dialog', { name: 'Remove from watchlist' });
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.getByRole('article', { name: 'Signal from Vega' })).toBeInTheDocument();
+    await user.click(within(card).getByRole('button', { name: /Remove Signal from Vega/ }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /Remove/ }));
+    await waitFor(() =>
+      expect(screen.queryByRole('article', { name: 'Signal from Vega' })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('shows Home rows as posters only, with a custom genre dropdown and a Because-you-watched row', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    renderApp('/');
+    expect(await screen.findByRole('heading', { name: 'Home', level: 1 })).toBeInTheDocument();
+    expect(await screen.findByRole('list', { name: /^Because you watched / })).toBeInTheDocument();
+    expect(await screen.findByRole('list', { name: 'New releases' })).toBeInTheDocument();
+    expect(screen.queryByText(/streaming on/)).not.toBeInTheDocument();
+    const genre = screen.getByRole('button', { name: /Genre/ });
+    genre.focus();
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    await user.keyboard('h{Enter}');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(genre).toHaveTextContent('Horror');
+    // Posters open a preview instead of showing text under them.
+    const trending = await screen.findByRole('list', { name: 'Trending' });
+    const { within } = await import('@testing-library/react');
+    await user.click(within(trending).getAllByRole('button')[0]);
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('hearts a title on its page and saves the like', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    renderApp('/watched/s-19');
+    await user.click(await screen.findByRole('button', { name: 'Like' }));
+    expect(await screen.findByRole('button', { name: 'Unlike' })).toBeInTheDocument();
+    const { db } = await import('@/services/mock/db');
+    await waitFor(() =>
+      expect(db().likes.some((l) => l.userId === 'u-alex' && l.titleId === 't-01')).toBe(true),
+    );
   });
 });

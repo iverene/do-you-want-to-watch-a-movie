@@ -1,44 +1,14 @@
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Scope } from '@/services';
 
-const KEY = 'dywwam-scope';
-const listeners = new Set<() => void>();
-
-function readDefault(): Scope {
-  try {
-    return localStorage.getItem(KEY) || 'ours';
-  } catch {
-    return 'ours';
-  }
-}
-
-/** The left page's "★ Ours" choice: the app-wide default scope, kept in localStorage. */
-export function useDefaultScope(): [Scope, (s: Scope) => void] {
-  const value = useSyncExternalStore(
-    (cb) => {
-      listeners.add(cb);
-      return () => listeners.delete(cb);
-    },
-    readDefault,
-    () => 'ours',
-  );
-  const set = useCallback((s: Scope) => {
-    try {
-      localStorage.setItem(KEY, s);
-    } catch {
-      /* keep in memory only */
-    }
-    listeners.forEach((l) => l());
-  }, []);
-  return [value, set];
-}
-
-/** Scope for Watched, Calendar and Stats: `?scope=` in the URL, else the default scope. */
+/**
+ * Scope for Watched, Calendar and Stats, kept in the URL as `?scope=`: `ours` (watched together,
+ * the default) or `mine`. The partner's solo watches are private, so there is no third option.
+ */
 export function useScope(): [Scope, (s: Scope) => void] {
   const [params, setParams] = useSearchParams();
-  const [fallback] = useDefaultScope();
-  const scope = params.get('scope') || fallback;
+  const scope: Scope = params.get('scope') === 'mine' ? 'mine' : 'ours';
   const setScope = useCallback(
     (s: Scope) =>
       setParams(

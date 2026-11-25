@@ -9,8 +9,8 @@ describe('mock seed', () => {
 
   it('has the catalog and history the prompt asks for', () => {
     const d = db();
-    expect(d.titles.filter((t) => t.mediaType === 'movie')).toHaveLength(30);
-    expect(d.titles.filter((t) => t.mediaType === 'tv')).toHaveLength(10);
+    expect(d.titles.filter((t) => t.mediaType === 'movie')).toHaveLength(46);
+    expect(d.titles.filter((t) => t.mediaType === 'tv')).toHaveLength(18);
     expect(d.screenings.filter((s) => s.datePrecision === 'day')).toHaveLength(24);
     expect(d.screenings.filter((s) => s.datePrecision === 'year')).toHaveLength(6);
     expect(d.watchlist).toHaveLength(10);

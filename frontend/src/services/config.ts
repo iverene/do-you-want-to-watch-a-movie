@@ -4,6 +4,5 @@ export const serviceConfig = {
   apiBaseUrl: '/api', // used only in 'http' mode
   mockLatencyMs: 250, // fake network delay so loading states are visible
   mockStorageKey: 'dywwam-mock-db-v1',
-  region: 'PH', // streaming providers region
   timeZone: 'Asia/Manila', // "today" for new watches and streak weeks
 };
